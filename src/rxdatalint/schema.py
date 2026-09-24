@@ -1,0 +1,36 @@
+"""SCMD schema definitions and backwards-compatible column aliases."""
+
+CANONICAL_COLUMNS = (
+    "YEAR_MONTH",
+    "ODS_CODE",
+    "VMP_SNOMED_CODE",
+    "VMP_PRODUCT_NAME",
+    "VMP_UDFS_UNIT_OF_MEASURE_IDENTIFIER",
+    "VMP_UDFS_UNIT_OF_MEASURE_NAME",
+    "TOTAL_QUANTITY_IN_VMP_UDFS_UNIT_OF_MEASURE",
+    "VMP_UNIT_DOSE_UNIT_OF_MEASURE_NAME",
+    "TOTAL_QUANTITY_IN_VMP_UNIT_DOSE_UNIT_OF_MEASURE",
+    "INDICATIVE_COST",
+)
+
+REQUIRED_COLUMNS = (
+    "YEAR_MONTH",
+    "ODS_CODE",
+    "VMP_SNOMED_CODE",
+    "VMP_PRODUCT_NAME",
+    "TOTAL_QUANTITY_IN_VMP_UDFS_UNIT_OF_MEASURE",
+    "INDICATIVE_COST",
+)
+
+# NHSBSA changed these names in the June 2026 provisional release.
+COLUMN_ALIASES = {
+    "UNIT_OF_MEASURE_IDENTIFIER": "VMP_UDFS_UNIT_OF_MEASURE_IDENTIFIER",
+    "UNIT_OF_MEASURE_NAME": "VMP_UDFS_UNIT_OF_MEASURE_NAME",
+    "TOTAL_QUANITY_IN_VMP_UNIT": "TOTAL_QUANTITY_IN_VMP_UDFS_UNIT_OF_MEASURE",
+}
+
+
+def normalise_header(name: str) -> str:
+    cleaned = name.strip().upper().replace(" ", "_")
+    return COLUMN_ALIASES.get(cleaned, cleaned)
+
