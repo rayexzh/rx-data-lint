@@ -117,3 +117,8 @@ handling rules.
 ## Licence
 
 MIT
+
+## Development progress
+
+See [rule boundaries](docs/RULES.md) and the [v0.2 checklist](docs/V0.2-PLAN.zh-CN.md). Reports now include input SHA-256, byte size, check time, version metadata and distinct affected-record counts. These identify the checked input; they are not a compliance certificate. Processing remains in memory.
+

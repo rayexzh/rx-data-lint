@@ -121,3 +121,8 @@ https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-pri
 ## 许可证
 
 MIT
+
+## 开发进度
+
+参见 [v0.2 改进清单](docs/V0.2-PLAN.zh-CN.md) 与 [规则及适用边界](docs/RULES.md)。报告已增加输入文件 SHA-256、字节数、检查时间、版本和受影响记录数；这些信息用于复查，不代表合规认证。当前仍在内存中处理数据。
+
