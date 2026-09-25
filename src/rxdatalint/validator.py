@@ -3,13 +3,20 @@
 from __future__ import annotations
 
 import csv
+import hashlib
+import io
+import math
 import re
 import statistics
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .schema import CANONICAL_COLUMNS, COLUMN_ALIASES, REQUIRED_COLUMNS, normalise_header
+from . import __version__
+
+RULESET_VERSION = "0.2.0"
 
 MONTH_RE = re.compile(r"^(\d{4})-?(0[1-9]|1[0-2])$")
 ODS_RE = re.compile(r"^[A-Z0-9]{3,5}$")
@@ -34,6 +41,13 @@ class ValidationResult:
     columns: list[str]
     issues: list[Issue]
     cleaned_rows: list[dict[str, str]]
+    source_sha256: str = ""
+    source_size_bytes: int = 0
+    checked_at_utc: str = ""
+
+    @property
+    def affected_row_count(self) -> int:
+        return len({issue.row for issue in self.issues if issue.row is not None})
 
     @property
     def severity_counts(self) -> dict[str, int]:
@@ -49,6 +63,16 @@ class ValidationResult:
     def to_dict(self) -> dict:
         return {
             "source": self.source,
+            "provenance": {
+                "tool_version": __version__,
+                "ruleset_version": RULESET_VERSION,
+                "source_sha256": self.source_sha256,
+                "source_size_bytes": self.source_size_bytes,
+                "checked_at_utc": self.checked_at_utc,
+            },
+            "affected_row_count": self.affected_row_count,
+            "non_row_finding_count": sum(issue.row is None for issue in self.issues),
+            "interpretation": "No findings means no current rules triggered, not proof of correctness or compliance. Exported CSV is normalized, not automatically corrected. Row numbers are logical CSV records including the header.",
             "row_count": self.row_count,
             "columns": self.columns,
             "quality_score": self.score,
@@ -59,7 +83,8 @@ class ValidationResult:
 
 def _parse_number(value: str) -> float | None:
     try:
-        return float(value.replace(",", "").strip())
+        number = float(value.replace(",", "").strip())
+        return number if math.isfinite(number) else None
     except (AttributeError, ValueError):
         return None
 
@@ -74,6 +99,8 @@ def _month_index(value: str) -> int | None:
 def _canonicalise(row: dict[str, str], header_map: dict[str, str]) -> dict[str, str]:
     output = {column: "" for column in CANONICAL_COLUMNS}
     for original, value in row.items():
+        if original is None:
+            continue
         canonical = header_map.get(original, normalise_header(original))
         if canonical in output:
             output[canonical] = (value or "").strip()
@@ -84,13 +111,20 @@ def validate_csv(path: str | Path) -> ValidationResult:
     source = Path(path)
     issues: list[Issue] = []
     cleaned_rows: list[dict[str, str]] = []
+    # Hash and parse the same byte snapshot, including BOM and original newlines.
+    content = source.read_bytes()
+    provenance = {
+        "source_sha256": hashlib.sha256(content).hexdigest(),
+        "source_size_bytes": len(content),
+        "checked_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
 
-    with source.open("r", encoding="utf-8-sig", newline="") as handle:
+    with io.StringIO(content.decode("utf-8-sig"), newline="") as handle:
         reader = csv.DictReader(handle)
         if not reader.fieldnames:
             return ValidationResult(str(source), 0, [], [Issue(
                 "schema.empty", "error", "The CSV has no header row."
-            )], [])
+            )], [], **provenance)
 
         header_map = {name: normalise_header(name) for name in reader.fieldnames}
         canonical_headers = list(dict.fromkeys(header_map.values()))
@@ -119,6 +153,11 @@ def validate_csv(path: str | Path) -> ValidationResult:
         quantities_by_product: dict[str, list[tuple[int, float]]] = defaultdict(list)
 
         for row_number, raw in enumerate(reader, start=2):
+            if None in raw or any(value is None for value in raw.values()):
+                issues.append(Issue(
+                    "schema.row_width", "error", "Record has a different number of fields than the header.",
+                    row_number, guidance="Review the original record. Extra fields are not included in the normalized export.",
+                ))
             row = _canonicalise(raw, header_map)
             cleaned_rows.append(row)
 
@@ -153,8 +192,8 @@ def validate_csv(path: str | Path) -> ValidationResult:
                     row_number, "VMP_PRODUCT_NAME", "",
                 ))
 
-            key = (month, ods, snomed)
-            if all(key):
+            key = (str(month_idx), ods, snomed)
+            if month_idx is not None and ODS_RE.fullmatch(ods) and SNOMED_RE.fullmatch(snomed):
                 if key in duplicate_keys:
                     issues.append(Issue(
                         "row.duplicate_key", "warning",
@@ -192,7 +231,7 @@ def validate_csv(path: str | Path) -> ValidationResult:
         _add_outlier_issues(quantities_by_product, issues)
 
     return ValidationResult(
-        str(source), len(cleaned_rows), canonical_headers, issues, cleaned_rows
+        str(source), len(cleaned_rows), canonical_headers, issues, cleaned_rows, **provenance
     )
 
 

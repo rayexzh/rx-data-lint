@@ -44,6 +44,11 @@ def _html_report(result: ValidationResult) -> str:
         )
     issue_rows = "".join(rows) or "<tr><td colspan='6'>No issues detected.</td></tr>"
     counts = result.severity_counts
+    provenance = result.to_dict()["provenance"]
+    evidence = "".join(
+        f"<dt>{html.escape(key)}</dt><dd>{html.escape(str(value))}</dd>"
+        for key, value in provenance.items()
+    )
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>RxDataLint quality report</title>
@@ -54,10 +59,14 @@ h1{{margin-bottom:4px}}.meta{{color:#5b6863}}.cards{{display:flex;gap:12px;flex-
 table{{width:100%;border-collapse:collapse;background:white}}th,td{{padding:10px;border-bottom:1px solid #e5ebe8;text-align:left;vertical-align:top}}th{{background:#eaf2ef}}
 .badge{{padding:3px 8px;border-radius:20px;font-weight:650}}.error{{background:#fee2e2;color:#991b1b}}.warning{{background:#fef3c7;color:#92400e}}.info{{background:#dbeafe;color:#1e40af}}
 </style></head><body><main><h1>RxDataLint quality report</h1><p class="meta">{html.escape(result.source)}</p>
-<div class="cards"><div class="card"><div>Quality score</div><div class="score">{result.score}</div></div>
+<p>No findings means no current rules triggered, not proof of correctness or compliance.
+The experimental score is not a percentage of correct records.</p>
+<p>Normalized CSV export does not automatically correct flagged values. Row numbers identify logical CSV records, including the header.</p>
+<div class="cards"><div class="card"><div>Experimental score</div><div class="score">{result.score}</div></div>
 <div class="card"><div>Rows checked</div><div class="score">{result.row_count}</div></div>
 <div class="card"><div>Errors</div><div class="score">{counts['error']}</div></div>
 <div class="card"><div>Warnings</div><div class="score">{counts['warning']}</div></div></div>
+<p>Distinct records with findings: {result.affected_row_count}. Findings without a record number: {sum(issue.row is None for issue in result.issues)}.</p>
+<details><summary>Input and execution evidence</summary><dl style="overflow-wrap:anywhere">{evidence}</dl></details>
 <table><thead><tr><th>Severity</th><th>Rule</th><th>Row</th><th>Column</th><th>Finding</th><th>Guidance</th></tr></thead>
 <tbody>{issue_rows}</tbody></table></main></body></html>"""
-
