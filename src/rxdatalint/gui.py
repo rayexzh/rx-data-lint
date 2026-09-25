@@ -19,11 +19,11 @@ TEXT = {
         "language": "English",
         "no_file": "尚未选择文件",
         "checking": "正在检查数据，请稍候…",
-        "score": "实验性质量分",
+        "score": "受影响记录数",
         "rows": "检查行数",
         "errors": "错误",
         "warnings": "警告",
-        "passed": "基础检查通过：未发现错误或警告",
+        "passed": "已执行的检查未发现问题，请查看检查覆盖情况",
         "review": "发现需要检查的问题",
         "severity": "级别",
         "rule": "检查规则",
@@ -35,7 +35,7 @@ TEXT = {
         "no_issues": "未发现问题",
         "export_title": "选择报告保存文件夹",
         "exported": "报告导出成功",
-        "created": "已生成 3 个文件：\nquality-report.html\nquality-report.json\ncleaned-scmd.csv\n\n保存位置：\n{path}",
+        "created": "已生成 3 个文件：\nquality-report.html\nquality-report.json\nnormalized-scmd.csv\n\n保存位置：\n{path}",
         "open_error": "无法检查文件",
         "export_error": "无法导出报告",
         "status_ready": "就绪",
@@ -45,7 +45,7 @@ TEXT = {
         "info": "提示",
         "guidance": "处理建议",
         "value": "原始值",
-        "score_note": "质量分是原型阶段的筛查指标，用于帮助排序问题，不代表临床、财务或监管结论。",
+        "score_note": "受影响记录数按记录去重。请结合检查覆盖情况阅读结果；已执行不等于通过，规范化导出不会自动修正异常。",
     },
     "en": {
         "title": "RxDataLint",
@@ -55,11 +55,11 @@ TEXT = {
         "language": "中文",
         "no_file": "No file selected",
         "checking": "Checking data…",
-        "score": "Experimental score",
+        "score": "Affected records",
         "rows": "Rows checked",
         "errors": "Errors",
         "warnings": "Warnings",
-        "passed": "Basic checks passed: no errors or warnings found",
+        "passed": "No findings in executed checks; review coverage",
         "review": "Findings need review",
         "severity": "Severity",
         "rule": "Rule",
@@ -71,7 +71,7 @@ TEXT = {
         "no_issues": "No issues found",
         "export_title": "Choose a report folder",
         "exported": "Report exported",
-        "created": "Created 3 files:\nquality-report.html\nquality-report.json\ncleaned-scmd.csv\n\nSaved to:\n{path}",
+        "created": "Created 3 files:\nquality-report.html\nquality-report.json\nnormalized-scmd.csv\n\nSaved to:\n{path}",
         "open_error": "Could not validate file",
         "export_error": "Could not export report",
         "status_ready": "Ready",
@@ -81,7 +81,7 @@ TEXT = {
         "info": "Information",
         "guidance": "Guidance",
         "value": "Source value",
-        "score_note": "The score is an early screening aid. It is not a clinical, financial, or regulatory conclusion.",
+        "score_note": "Affected records are counted once. Review check coverage: executed does not mean passed, and normalized exports do not correct findings.",
     },
 }
 
@@ -156,6 +156,8 @@ class App(tk.Tk):
             name.pack(anchor="w")
             self.metric_widgets[key] = (value, name)
 
+        self.coverage_button = ttk.Button(content, command=self.show_coverage)
+        self.coverage_button.pack(anchor="w", pady=(0, 8))
         self.result_banner = ttk.Label(content, style="Passed.TLabel")
 
         table_frame = ttk.Frame(content)
@@ -192,6 +194,7 @@ class App(tk.Tk):
         self.status.pack(fill="x", side="bottom")
 
     def _refresh_text(self) -> None:
+        self.coverage_button.configure(text="检查覆盖情况" if self.language == "zh" else "Check coverage")
         self.title_label.configure(text=self.t["title"])
         self.subtitle_label.configure(text=self.t["subtitle"])
         self.choose_button.configure(text=self.t["choose"])
@@ -224,8 +227,10 @@ class App(tk.Tk):
         self.status.configure(text=self.t["checking"])
         self.update_idletasks()
         try:
-            self.source_path = Path(selected)
-            self.result = validate_csv(self.source_path)
+            candidate = Path(selected)
+            result = validate_csv(candidate)
+            self.source_path = candidate
+            self.result = result
         except Exception as exc:  # GUI boundary: show readable error instead of closing.
             messagebox.showerror(self.t["open_error"], str(exc))
             self.status.configure(text=self.t["status_ready"])
@@ -239,7 +244,7 @@ class App(tk.Tk):
         self.file_label.configure(text=self.source_path.name if self.source_path else self.result.source)
         counts = self.result.severity_counts
         values = {
-            "score": f"{self.result.score}/100", "rows": str(self.result.row_count),
+            "score": str(self.result.affected_row_count), "rows": str(self.result.row_count),
             "errors": str(counts["error"]), "warnings": str(counts["warning"]),
         }
         for key, value in values.items():
@@ -259,8 +264,29 @@ class App(tk.Tk):
             self.tree.insert("", "end", values=("✓", "", "", "", self.t["no_issues"]), tags=("passed",))
             self.result_banner.configure(text=f"✓  {self.t['passed']}", style="Passed.TLabel")
         self.result_banner.pack(fill="x", pady=(0, 12), before=self.tree.master)
-        self._set_details(self.t["score_note"])
+        labels = {"executed": "已执行", "skipped": "已跳过", "not_applicable": "不适用"} if self.language == "zh" else {}
+        self._set_details(self.t["score_note"] + "\n" + "\n".join(
+            f"{c.rule} {c.column or ''}: {labels.get(c.status, c.status)} ({c.checked_count}) {c.reason}"
+            for c in self.result.checks))
         self.status.configure(text=self.t["status_loaded"].format(name=self.source_path.name if self.source_path else self.result.source))
+
+    def show_coverage(self) -> None:
+        if not self.result:
+            return
+        window = tk.Toplevel(self)
+        window.title("检查覆盖情况 / Check coverage")
+        window.geometry("920x500")
+        area = tk.Text(window, wrap="word")
+        scroll = ttk.Scrollbar(window, command=area.yview)
+        area.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
+        area.pack(fill="both", expand=True)
+        labels = {"executed": "已执行", "skipped": "已跳过", "not_applicable": "不适用"} if self.language == "zh" else {}
+        note = "计数单位按规则为记录、数值或机构组。已执行不等于通过。\n" if self.language == "zh" else "Counts represent records, values or organization groups. Executed does not mean passed.\n"
+        area.insert("end", note + "\n".join(
+            f"{c.rule} {c.column or ''}\n  {labels.get(c.status, c.status)} | {c.checked_count} | {c.reason}"
+            for c in self.result.checks))
+        area.configure(state="disabled")
 
     def show_selected_issue(self, _event=None) -> None:
         selected = self.tree.selection()
@@ -291,11 +317,11 @@ class App(tk.Tk):
         if not selected:
             return
         try:
-            write_outputs(self.result, selected)
+            paths = write_outputs(self.result, selected)
         except Exception as exc:
             messagebox.showerror(self.t["export_error"], str(exc))
             return
-        messagebox.showinfo(self.t["exported"], self.t["created"].format(path=selected))
+        messagebox.showinfo(self.t["exported"], "\n".join(str(path) for path in paths.values()))
 
 
 def main() -> None:
