@@ -69,6 +69,8 @@ python -m pip install -e .
 rx-data-lint examples/sample_scmd.csv --output outputs/demo
 ```
 
+Each export is saved in a new `run-*` subfolder of your chosen output directory; the application shows the actual file paths. Previous reports are preserved. Header conflicts or missing headers produce HTML/JSON reports without a normalized CSV. CLI exit codes are `0` for completed checks without errors (warnings may exist), `1` for errors or incomplete/no-data assessments, and `2` for input/output failures.
+
 The command exits with status 1 when errors are present, so it can later be
 used in automated data pipelines.
 
