@@ -31,3 +31,7 @@ JSON/HTML reports include executed, skipped and not_applicable checks with count
 Each export creates a unique run-* subdirectory inside the selected output directory. Previous exports are preserved, so a blocked run cannot accidentally inherit an earlier CSV. Export is not transactional: an interrupted or failed write may leave an incomplete run directory; only a successful return confirms completion.
 
 CLI exit codes: 0 means a completed assessment without errors (warnings may still exist); 1 means validation errors, blocked/partial assessment or no data; 2 means an input, encoding, CSV parsing or output I/O failure. Exit 0 is not proof of correctness or compliance.
+
+## Missing indicative cost (ruleset 0.2.2)
+
+Blank or whitespace-only INDICATIVE_COST cells are value.missing_cost warnings, not malformed-number errors. Missing required columns remain schema errors; nonblank invalid or nonfinite numbers remain errors. Missing costs are preserved, never imputed as zero. This severity is a project screening decision, not an official declaration that missing costs are acceptable. Cost completeness is reported by record count, not expenditure; the cause of missingness is unknown. A completed assessment or zero errors does not establish fitness for cost analysis.
