@@ -16,7 +16,7 @@ from pathlib import Path
 from .schema import CANONICAL_COLUMNS, COLUMN_ALIASES, REQUIRED_COLUMNS, normalise_header
 from . import __version__
 
-RULESET_VERSION = "0.2.1"
+RULESET_VERSION = "0.2.2"
 
 MONTH_RE = re.compile(r"^(\d{4})-?(0[1-9]|1[0-2])$")
 ODS_RE = re.compile(r"^[A-Z0-9]{3,5}$")
@@ -95,6 +95,7 @@ class ValidationResult:
                 "checked_at_utc": self.checked_at_utc,
             },
             "affected_row_count": self.affected_row_count,
+            "cost_completeness": self.cost_completeness,
             "non_row_finding_count": sum(issue.row is None for issue in self.issues),
             "interpretation": "No findings means no current rules triggered, not proof of correctness or compliance. Exported CSV is normalized, not automatically corrected. Row numbers are logical CSV records including the header.",
             "row_count": self.row_count,
@@ -102,6 +103,17 @@ class ValidationResult:
             "quality_score": self.score,
             "severity_counts": self.severity_counts,
             "issues": [asdict(issue) for issue in self.issues],
+        }
+
+    @property
+    def cost_completeness(self) -> dict:
+        available = not self.export_blocked and "INDICATIVE_COST" in self.columns and self.row_count > 0
+        missing = sum(not row["INDICATIVE_COST"] for row in self.cleaned_rows) if available else None
+        return {
+            "assessed": available,
+            "missing_rows": missing,
+            "missing_percent": round(100 * missing / self.row_count, 4) if available else None,
+            "note": "Missing cost is not zero. Nonblank costs may still be invalid; review findings. Completeness by record count is not coverage by expenditure.",
         }
 
 
@@ -150,6 +162,7 @@ def validate_csv(path: str | Path) -> ValidationResult:
         "value.ods_code": ["ODS_CODE"],
         "value.snomed_code": ["VMP_SNOMED_CODE"],
         "value.product_name": ["VMP_PRODUCT_NAME"],
+        "value.missing_cost": ["INDICATIVE_COST"],
         "row.duplicate_key": ["YEAR_MONTH", "ODS_CODE", "VMP_SNOMED_CODE"],
         "series.missing_month": ["YEAR_MONTH", "ODS_CODE"],
         "series.extreme_quantity": ["VMP_SNOMED_CODE", "TOTAL_QUANTITY_IN_VMP_UDFS_UNIT_OF_MEASURE"],
@@ -264,6 +277,15 @@ def validate_csv(path: str | Path) -> ValidationResult:
                 if column not in canonical_headers:
                     continue
                 value = row[column]
+                if column == "INDICATIVE_COST" and not value:
+                    issues.append(Issue(
+                        "value.missing_cost", "warning", "Indicative cost is missing; cost analysis is incomplete.",
+                        row_number, column, value,
+                        "Do not replace missing cost with zero or discard other usable fields. "
+                        "Report missing-cost coverage when aggregating. The reason for missingness is unknown. "
+                        "参考费用缺失：不要补零或直接删除整行；费用汇总需披露缺失情况，缺失原因尚未确认。",
+                    ))
+                    continue
                 if not value and column == "TOTAL_QUANTITY_IN_VMP_UNIT_DOSE_UNIT_OF_MEASURE":
                     continue
                 counts[("value.numeric", column)] += 1

@@ -23,6 +23,7 @@ TEXT = {
         "rows": "检查行数",
         "errors": "错误",
         "warnings": "警告",
+        "missing_cost": "费用缺失（记录占比）",
         "passed": "已执行的检查未发现问题，请查看检查覆盖情况",
         "review": "发现需要检查的问题",
         "severity": "级别",
@@ -59,6 +60,7 @@ TEXT = {
         "rows": "Rows checked",
         "errors": "Errors",
         "warnings": "Warnings",
+        "missing_cost": "Missing cost (% of records)",
         "passed": "No findings in executed checks; review coverage",
         "review": "Findings need review",
         "severity": "Severity",
@@ -90,6 +92,8 @@ class App(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.language = "zh"
+        self.search_query = ""
+        self.active_filter = "all"
         self.result = None
         self.source_path: Path | None = None
         self.issue_by_item: dict[str, Issue] = {}
@@ -147,7 +151,7 @@ class App(tk.Tk):
         metrics = ttk.Frame(content, style="App.TFrame")
         metrics.pack(fill="x", pady=(0, 12))
         self.metric_widgets: dict[str, tuple[ttk.Label, ttk.Label]] = {}
-        for key in ("score", "rows", "errors", "warnings"):
+        for key in ("score", "rows", "errors", "warnings", "missing_cost"):
             card = ttk.Frame(metrics, padding=(16, 11), style="MetricCard.TFrame")
             card.pack(side="left", fill="x", expand=True, padx=(0, 9))
             value = ttk.Label(card, text="—", style="Metric.TLabel")
@@ -158,6 +162,27 @@ class App(tk.Tk):
 
         self.coverage_button = ttk.Button(content, command=self.show_coverage)
         self.coverage_button.pack(anchor="w", pady=(0, 8))
+        self.filter_bar = ttk.Frame(content, style="App.TFrame")
+        self.filter_bar.pack(fill="x", pady=(0, 8))
+        self.filter_buttons = {}
+        for key in ("all", "value.missing_cost", "value.negative", "series.extreme_quantity", "other"):
+            button = ttk.Button(self.filter_bar, command=lambda k=key: self.select_filter(k))
+            button.pack(side="left", padx=(0, 6))
+            self.filter_buttons[key] = button
+        search_bar = ttk.Frame(content, style="App.TFrame")
+        search_bar.pack(fill="x", pady=(0, 8))
+        self.search_label = ttk.Label(search_bar, background="#f3f7f5")
+        self.search_label.pack(side="left")
+        self.search_var = tk.StringVar()
+        self.search_entry = ttk.Entry(search_bar, textvariable=self.search_var)
+        self.search_entry.pack(side="left", fill="x", expand=True, padx=8)
+        self.search_entry.bind("<Return>", self.apply_search)
+        self.search_button = ttk.Button(search_bar, command=self.apply_search)
+        self.search_button.pack(side="left")
+        self.clear_button = ttk.Button(search_bar, command=self.clear_search)
+        self.clear_button.pack(side="left", padx=(6, 0))
+        self.filter_note = ttk.Label(content, background="#f3f7f5")
+        self.filter_note.pack(anchor="w", pady=(0, 6))
         self.result_banner = ttk.Label(content, style="Passed.TLabel")
 
         table_frame = ttk.Frame(content)
@@ -194,6 +219,7 @@ class App(tk.Tk):
         self.status.pack(fill="x", side="bottom")
 
     def _refresh_text(self) -> None:
+        self.refresh_filters()
         self.coverage_button.configure(text="检查覆盖情况" if self.language == "zh" else "Check coverage")
         self.title_label.configure(text=self.t["title"])
         self.subtitle_label.configure(text=self.t["subtitle"])
@@ -231,6 +257,9 @@ class App(tk.Tk):
             result = validate_csv(candidate)
             self.source_path = candidate
             self.result = result
+            self.search_query = ""
+            self.search_var.set("")
+            self.active_filter = "all"
         except Exception as exc:  # GUI boundary: show readable error instead of closing.
             messagebox.showerror(self.t["open_error"], str(exc))
             self.status.configure(text=self.t["status_ready"])
@@ -247,6 +276,9 @@ class App(tk.Tk):
             "score": str(self.result.affected_row_count), "rows": str(self.result.row_count),
             "errors": str(counts["error"]), "warnings": str(counts["warning"]),
         }
+        cost = self.result.cost_completeness
+        values["missing_cost"] = f"{cost['missing_percent']:.2f}%" if cost['assessed'] else "—"
+        self.refresh_filters()
         for key, value in values.items():
             self.metric_widgets[key][0].configure(text=value)
 
@@ -254,11 +286,13 @@ class App(tk.Tk):
             self.tree.delete(item)
         self.issue_by_item.clear()
         if self.result.issues:
-            for issue in self.result.issues:
+            for issue in self.filtered_issues():
                 item = self.tree.insert("", "end", values=(
-                    self.t[issue.severity], issue.rule, issue.row or "", issue.column or "", issue.message
+                    self.t[issue.severity], self.rule_label(issue.rule), issue.row or "", issue.column or "", self.finding_text(issue)
                 ), tags=(issue.severity,))
                 self.issue_by_item[item] = issue
+            if not self.issue_by_item:
+                self.tree.insert("", "end", values=("", "", "", "", "没有匹配的问题，请调整搜索或分类。" if self.language == "zh" else "No matching findings. Change search or category."))
             self.result_banner.configure(text=f"⚠  {self.t['review']}", style="Review.TLabel")
         else:
             self.tree.insert("", "end", values=("✓", "", "", "", self.t["no_issues"]), tags=("passed",))
@@ -269,6 +303,69 @@ class App(tk.Tk):
             f"{c.rule} {c.column or ''}: {labels.get(c.status, c.status)} ({c.checked_count}) {c.reason}"
             for c in self.result.checks))
         self.status.configure(text=self.t["status_loaded"].format(name=self.source_path.name if self.source_path else self.result.source))
+
+    def filtered_issues(self):
+        issues = self.result.issues if self.result else []
+        primary = {"value.missing_cost", "value.negative", "series.extreme_quantity"}
+        return [i for i in issues if (self.active_filter == "all" or
+                (self.active_filter == "other" and i.rule not in primary) or i.rule == self.active_filter)
+                and self.matches_search(i)]
+
+    def matches_search(self, issue):
+        if not self.search_query:
+            return True
+        record = {}
+        if self.result and issue.row and 0 <= issue.row - 2 < len(self.result.cleaned_rows):
+            record = self.result.cleaned_rows[issue.row - 2]
+        text = " ".join(str(v) for v in (
+            issue.rule, issue.row or "", issue.column or "", issue.value or "",
+            issue.message, issue.guidance or "", self.rule_label(issue.rule), self.finding_text(issue),
+            *record.values(),
+        )).casefold()
+        return all(term in text for term in self.search_query.casefold().split())
+
+    def apply_search(self, _event=None):
+        self.search_query = self.search_var.get().strip()
+        self._render_result()
+
+    def clear_search(self):
+        self.search_var.set("")
+        self.apply_search()
+
+    def rule_label(self, rule):
+        if self.language == "zh":
+            return {"value.missing_cost": "费用缺失", "value.negative": "负数，需复核",
+                    "series.extreme_quantity": "数量偏高，需复核"}.get(rule, rule)
+        return rule
+
+    def finding_text(self, issue):
+        if self.language == "zh":
+            return {
+                "value.missing_cost": "参考费用为空，费用分析需披露缺失；不要补零。",
+                "value.negative": f"发现负数 {issue.value}，可能涉及调整；需核查，勿直接删除或取绝对值。",
+                "series.extreme_quantity": "数量超过同药品正数中位数的 20 倍；机构差异可能影响比较，不代表已证实错误。",
+            }.get(issue.rule, issue.message)
+        return issue.message
+
+    def select_filter(self, key):
+        self.active_filter = key
+        self._render_result()
+
+    def refresh_filters(self):
+        self.search_label.configure(text="搜索问题" if self.language == "zh" else "Search findings")
+        self.search_button.configure(text="搜索 / 回车" if self.language == "zh" else "Search / Enter")
+        self.clear_button.configure(text="清除" if self.language == "zh" else "Clear")
+        labels = (["全部", "费用缺失", "负数", "数量偏高", "其他"] if self.language == "zh"
+                  else ["All", "Missing cost", "Negative", "High quantity", "Other"])
+        issues = self.result.issues if self.result else []
+        primary = {"value.missing_cost", "value.negative", "series.extreme_quantity"}
+        for (key, button), label in zip(self.filter_buttons.items(), labels):
+            count = sum(key == "all" or i.rule == key or (key == "other" and i.rule not in primary) for i in issues)
+            button.configure(text=f"{label} ({count:,})", state="disabled" if key == self.active_filter else "normal")
+        count = len(self.filtered_issues())
+        query = self.search_query
+        self.filter_note.configure(text=(f"显示 {count:,} 条提示｜搜索：{query or '无'}｜分类计数为搜索前总数；导出包含全部结果。" if self.language == "zh"
+                                        else f"Showing {count:,} findings | Search: {query or 'none'} | Category totals are unsearched; export includes all results."))
 
     def show_coverage(self) -> None:
         if not self.result:
@@ -293,7 +390,7 @@ class App(tk.Tk):
         if not selected or selected[0] not in self.issue_by_item:
             return
         issue = self.issue_by_item[selected[0]]
-        lines = [f"[{self.t[issue.severity]}] {issue.message}"]
+        lines = [f"[{self.t[issue.severity]}] {self.finding_text(issue)}", f"Rule: {issue.rule}", issue.message]
         if issue.row:
             lines.append(f"{self.t['row']}: {issue.row}")
         if issue.column:

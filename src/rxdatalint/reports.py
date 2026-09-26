@@ -52,6 +52,9 @@ def _html_report(result: ValidationResult) -> str:
         )
     issue_rows = "".join(rows) or "<tr><td colspan='6'>No issues detected.</td></tr>"
     counts = result.severity_counts
+    cost = result.cost_completeness
+    cost_note = (f"Missing indicative cost: {cost['missing_rows']} records ({cost['missing_percent']}%)."
+                 if cost['assessed'] else "Cost completeness was not assessed.")
     provenance = result.to_dict()["provenance"]
     evidence = "".join(
         f"<dt>{html.escape(key)}</dt><dd>{html.escape(str(value))}</dd>"
@@ -73,6 +76,7 @@ table{{width:100%;border-collapse:collapse;background:white}}th,td{{padding:10px
 The experimental score is not a percentage of correct records.</p>
 <p>Normalized CSV export does not automatically correct flagged values. Row numbers identify logical CSV records, including the header.</p>
 <p>Assessment: {result.assessment}. Normalized export available: {not result.export_blocked}.</p>
+<p>{cost_note} Missing cost is not zero. This is record coverage, not expenditure coverage; nonblank costs may still be invalid.</p>
 <div class="cards"><div class="card"><div>Affected records</div><div class="score">{result.affected_row_count}</div></div>
 <div class="card"><div>Rows checked</div><div class="score">{result.row_count}</div></div>
 <div class="card"><div>Errors</div><div class="score">{counts['error']}</div></div>
