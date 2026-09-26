@@ -47,9 +47,24 @@ class CoverageTests(unittest.TestCase):
             self.assertEqual(paths['csv'].name,'normalized-scmd.csv')
             self.assertIn('Check coverage',paths['html'].read_text())
 
-    def test_blank_present_cost_is_invalid_not_skipped(self):
+    def test_blank_present_cost_is_missing_not_malformed(self):
         r=self.run_case(HEADER+'\n'+ROW.rsplit(',',1)[0]+',')
-        self.assertIn('value.numeric',[i.rule for i in r.issues])
+        self.assertEqual([(i.rule,i.severity) for i in r.issues],[('value.missing_cost','warning')])
+        self.assertEqual(r.cleaned_rows[0]['INDICATIVE_COST'],'')
+        self.assertEqual(r.cost_completeness['missing_percent'],100)
         c=next(c for c in r.checks if c.rule=='value.numeric' and c.column=='INDICATIVE_COST')
-        self.assertEqual(c.status,'executed')
-        self.assertEqual(c.checked_count,1)
+        self.assertEqual(c.status,'not_applicable')
+        self.assertEqual(c.checked_count,0)
+
+    def test_zero_negative_and_malformed_cost_remain_distinct(self):
+        for value, expected in [('0', []), ('-1', ['value.negative']), ('abc', ['value.numeric']), ('NaN', ['value.numeric'])]:
+            with self.subTest(value=value):
+                r=self.run_case(HEADER+'\n'+ROW.rsplit(',',1)[0]+','+value)
+                self.assertEqual([i.rule for i in r.issues],expected)
+                self.assertEqual(r.cleaned_rows[0]['INDICATIVE_COST'],value)
+                self.assertEqual(r.cost_completeness['missing_rows'],0)
+
+    def test_absent_cost_column_has_no_completeness_percentage(self):
+        r=self.run_case(HEADER.rsplit(',',1)[0]+'\n'+ROW.rsplit(',',1)[0])
+        self.assertFalse(r.cost_completeness['assessed'])
+        self.assertIsNone(r.cost_completeness['missing_percent'])
