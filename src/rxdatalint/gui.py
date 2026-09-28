@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import tkinter as tk
+from queue import Empty, Queue
+from threading import Thread
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
@@ -95,6 +97,9 @@ class App(tk.Tk):
         self.search_query = ""
         self.active_filter = "all"
         self.result = None
+        self.busy = False
+        self._poll_id = None
+        self._render_id = None
         self.source_path: Path | None = None
         self.issue_by_item: dict[str, Issue] = {}
         self.title("RxDataLint — NHS medicines data quality")
@@ -147,6 +152,8 @@ class App(tk.Tk):
         self.language_button.pack(side="right")
         self.file_label = ttk.Label(toolbar, background="#f3f7f5", foreground="#42554f")
         self.file_label.pack(side="left", padx=12)
+        self.progress = ttk.Progressbar(content, mode="indeterminate")
+        self.progress.pack(fill="x", pady=(0, 8))
 
         metrics = ttk.Frame(content, style="App.TFrame")
         metrics.pack(fill="x", pady=(0, 12))
@@ -245,29 +252,82 @@ class App(tk.Tk):
         self._refresh_text()
 
     def choose_file(self) -> None:
+        if self.busy:
+            return
         selected = filedialog.askopenfilename(
             title=self.t["choose"], filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
         )
         if not selected:
             return
-        self.status.configure(text=self.t["checking"])
-        self.update_idletasks()
-        try:
-            candidate = Path(selected)
-            result = validate_csv(candidate)
+        candidate = Path(selected)
+
+        def loaded(result):
             self.source_path = candidate
             self.result = result
             self.search_query = ""
             self.search_var.set("")
             self.active_filter = "all"
-        except Exception as exc:  # GUI boundary: show readable error instead of closing.
-            messagebox.showerror(self.t["open_error"], str(exc))
-            self.status.configure(text=self.t["status_ready"])
+            self.export_button.configure(state="normal")
+            self._render_result()
+
+        self._run_background(lambda: validate_csv(candidate), loaded,
+                             self.t["checking"] + " " + candidate.name, self.t["open_error"])
+
+    def _run_background(self, operation, completed, status, error_title):
+        """Workers exchange plain Python values; all Tk calls stay on the UI thread."""
+        if self.busy:
             return
-        self.export_button.configure(state="normal")
-        self._render_result()
+        self.busy = True
+        for widget in (self.choose_button, self.export_button, self.language_button,
+                       self.search_entry, self.search_button, self.clear_button,
+                       *self.filter_buttons.values()):
+            widget.configure(state="disabled")
+        self.progress.start(15)
+        self.status.configure(text=status)
+        mailbox = Queue(maxsize=1)
+
+        def work():
+            try:
+                mailbox.put((True, operation()))
+            except Exception as exc:
+                mailbox.put((False, str(exc)))
+
+        def poll():
+            self._poll_id = None
+            try:
+                success, value = mailbox.get_nowait()
+            except Empty:
+                self._poll_id = self.after(50, poll)
+                return
+            self.busy = False
+            self.progress.stop()
+            self.progress.configure(value=0)
+            for widget in (self.choose_button, self.language_button, self.search_entry,
+                           self.search_button, self.clear_button):
+                widget.configure(state="normal")
+            self.export_button.configure(state="normal" if self.result else "disabled")
+            self.refresh_filters()
+            self.status.configure(text=self.t["status_loaded"].format(name=self.source_path.name)
+                                  if self.source_path else self.t["status_ready"])
+            if success:
+                completed(value)
+            else:
+                messagebox.showerror(error_title, value)
+
+        Thread(target=work, daemon=True).start()
+        self._poll_id = self.after(50, poll)
+
+    def destroy(self):
+        for callback in (self._poll_id, self._render_id):
+            if callback is not None:
+                self.after_cancel(callback)
+        self._poll_id = self._render_id = None
+        super().destroy()
 
     def _render_result(self) -> None:
+        if self._render_id is not None:
+            self.after_cancel(self._render_id)
+            self._render_id = None
         if not self.result:
             return
         self.file_label.configure(text=self.source_path.name if self.source_path else self.result.source)
@@ -286,12 +346,20 @@ class App(tk.Tk):
             self.tree.delete(item)
         self.issue_by_item.clear()
         if self.result.issues:
-            for issue in self.filtered_issues():
-                item = self.tree.insert("", "end", values=(
-                    self.t[issue.severity], self.rule_label(issue.rule), issue.row or "", issue.column or "", self.finding_text(issue)
-                ), tags=(issue.severity,))
-                self.issue_by_item[item] = issue
-            if not self.issue_by_item:
+            findings = self.filtered_issues()
+
+            def insert_batch(offset=0):
+                self._render_id = None
+                for issue in findings[offset:offset + 200]:
+                    item = self.tree.insert("", "end", values=(
+                        self.t[issue.severity], self.rule_label(issue.rule), issue.row or "", issue.column or "", self.finding_text(issue)
+                    ), tags=(issue.severity,))
+                    self.issue_by_item[item] = issue
+                if offset + 200 < len(findings):
+                    self._render_id = self.after(1, insert_batch, offset + 200)
+
+            insert_batch()
+            if not findings:
                 self.tree.insert("", "end", values=("", "", "", "", "没有匹配的问题，请调整搜索或分类。" if self.language == "zh" else "No matching findings. Change search or category."))
             self.result_banner.configure(text=f"⚠  {self.t['review']}", style="Review.TLabel")
         else:
@@ -319,12 +387,15 @@ class App(tk.Tk):
             record = self.result.cleaned_rows[issue.row - 2]
         text = " ".join(str(v) for v in (
             issue.rule, issue.row or "", issue.column or "", issue.value or "",
-            issue.message, issue.guidance or "", self.rule_label(issue.rule), self.finding_text(issue),
+            issue.message, issue.guidance or "",
+            self.rule_label(issue.rule, language="zh"), self.finding_text(issue, language="zh"),
             *record.values(),
         )).casefold()
         return all(term in text for term in self.search_query.casefold().split())
 
     def apply_search(self, _event=None):
+        if self.busy:
+            return
         self.search_query = self.search_var.get().strip()
         self._render_result()
 
@@ -332,14 +403,14 @@ class App(tk.Tk):
         self.search_var.set("")
         self.apply_search()
 
-    def rule_label(self, rule):
-        if self.language == "zh":
+    def rule_label(self, rule, language=None):
+        if (language or self.language) == "zh":
             return {"value.missing_cost": "费用缺失", "value.negative": "负数，需复核",
                     "series.extreme_quantity": "数量偏高，需复核"}.get(rule, rule)
         return rule
 
-    def finding_text(self, issue):
-        if self.language == "zh":
+    def finding_text(self, issue, language=None):
+        if (language or self.language) == "zh":
             return {
                 "value.missing_cost": "参考费用为空，费用分析需披露缺失；不要补零。",
                 "value.negative": f"发现负数 {issue.value}，可能涉及调整；需核查，勿直接删除或取绝对值。",
@@ -408,17 +479,18 @@ class App(tk.Tk):
         self.details.configure(state="disabled")
 
     def export_report(self) -> None:
-        if not self.result:
+        if self.busy or not self.result:
             return
         selected = filedialog.askdirectory(title=self.t["export_title"])
         if not selected:
             return
-        try:
-            paths = write_outputs(self.result, selected)
-        except Exception as exc:
-            messagebox.showerror(self.t["export_error"], str(exc))
-            return
-        messagebox.showinfo(self.t["exported"], "\n".join(str(path) for path in paths.values()))
+        result = self.result
+        self._run_background(
+            lambda: write_outputs(result, selected),
+            lambda paths: messagebox.showinfo(self.t["exported"], "\n".join(str(path) for path in paths.values())),
+            "正在导出完整报告…" if self.language == "zh" else "Exporting complete reports…",
+            self.t["export_error"],
+        )
 
 
 def main() -> None:
