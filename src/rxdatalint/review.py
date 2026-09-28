@@ -1,0 +1,69 @@
+"""Review summaries and contextual finding exports; never modify source data."""
+
+from collections import defaultdict
+import csv
+from dataclasses import asdict
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+import tempfile
+
+from .validator import ValidationResult, Issue
+
+
+def record_for(result: ValidationResult, issue: Issue) -> dict[str, str]:
+    if issue.row is not None and 0 <= issue.row - 2 < len(result.cleaned_rows):
+        return result.cleaned_rows[issue.row - 2]
+    return {}
+
+
+def summarise(result: ValidationResult) -> list[dict]:
+    groups = defaultdict(list)
+    for issue in result.issues:
+        groups[issue.rule].append(issue)
+    summaries = []
+    for rule, issues in sorted(groups.items()):
+        records = [record_for(result, i) for i in issues]
+        summaries.append({
+            "rule": rule, "findings": len(issues),
+            "affected_records": len({i.row for i in issues if record_for(result, i)}),
+            "unlocated_findings": sum(not record_for(result, i) for i in issues),
+            "organisations": len({r.get("ODS_CODE") for r in records if r.get("ODS_CODE")}),
+            "products": len({r.get("VMP_SNOMED_CODE") for r in records if r.get("VMP_SNOMED_CODE")}),
+        })
+    return summaries
+
+
+def write_filtered_findings(result, issues, output_dir, *, query="", category="all"):
+    """Export one row per selected finding, not a cleaned dataset or full report."""
+    root = Path(output_dir)
+    root.mkdir(parents=True, exist_ok=True)
+    destination = Path(tempfile.mkdtemp(prefix="findings-", dir=root))
+    contextual = [{**asdict(i), "record": record_for(result, i)} for i in issues]
+    payload = {
+        "scope": "filtered_findings", "query": query, "category": category,
+        "exported_at_utc": datetime.now(timezone.utc).isoformat(),
+        "source_sha256": result.source_sha256, "source": result.source,
+        "total_findings": len(result.issues), "selected_findings": len(issues),
+        "note": "One item per finding. Not a complete quality report. JSON preserves original text; CSV prefixes spreadsheet formula-like text with an apostrophe.",
+        "findings": contextual,
+    }
+    json_path = destination / "filtered-findings.json"
+    json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    csv_path = destination / "filtered-findings.csv"
+    context_fields = ("YEAR_MONTH", "ODS_CODE", "VMP_SNOMED_CODE", "VMP_PRODUCT_NAME")
+    issue_fields = ("rule", "severity", "row", "column", "value", "message", "guidance")
+
+    def cell(value):
+        if isinstance(value, str) and value.lstrip().startswith(("=", "+", "-", "@")):
+            return "'" + value
+        return value
+
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=(*context_fields, *issue_fields))
+        writer.writeheader()
+        for item in contextual:
+            row = {key: item["record"].get(key, "") for key in context_fields}
+            row.update({key: item[key] for key in issue_fields})
+            writer.writerow({key: cell(value) for key, value in row.items()})
+    return {"json": json_path, "csv": csv_path}

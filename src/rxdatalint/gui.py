@@ -9,6 +9,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from .reports import write_outputs
+from .review import record_for, summarise, write_filtered_findings
 from .validator import Issue, validate_csv
 
 
@@ -17,7 +18,7 @@ TEXT = {
         "title": "RxDataLint",
         "subtitle": "在分析前检查 NHS 医院药品数据（SCMD）的质量",
         "choose": "选择 SCMD CSV",
-        "export": "导出报告",
+        "export": "导出完整报告",
         "language": "English",
         "no_file": "尚未选择文件",
         "checking": "正在检查数据，请稍候…",
@@ -54,7 +55,7 @@ TEXT = {
         "title": "RxDataLint",
         "subtitle": "Review NHS Secondary Care Medicines Data before analysis",
         "choose": "Choose SCMD CSV",
-        "export": "Export report",
+        "export": "Export full report",
         "language": "中文",
         "no_file": "No file selected",
         "checking": "Checking data…",
@@ -103,8 +104,8 @@ class App(tk.Tk):
         self.source_path: Path | None = None
         self.issue_by_item: dict[str, Issue] = {}
         self.title("RxDataLint — NHS medicines data quality")
-        self.geometry("1180x760")
-        self.minsize(900, 620)
+        self.geometry("1180x850")
+        self.minsize(900, 800)
         self.configure(background="#f3f7f5")
         self._configure_styles()
         self._build()
@@ -132,14 +133,14 @@ class App(tk.Tk):
         style.configure("Treeview.Heading", font=("Microsoft YaHei UI", 9, "bold"), background="#dce9e4", foreground="#17372f")
 
     def _build(self) -> None:
-        header = ttk.Frame(self, style="Header.TFrame", padding=(26, 20))
+        header = ttk.Frame(self, style="Header.TFrame", padding=(26, 12))
         header.pack(fill="x")
         self.title_label = ttk.Label(header, style="Title.TLabel")
         self.title_label.pack(anchor="w")
         self.subtitle_label = ttk.Label(header, style="Subtitle.TLabel")
         self.subtitle_label.pack(anchor="w", pady=(3, 0))
 
-        content = ttk.Frame(self, style="App.TFrame", padding=22)
+        content = ttk.Frame(self, style="App.TFrame", padding=14)
         content.pack(fill="both", expand=True)
 
         toolbar = ttk.Frame(content, style="App.TFrame")
@@ -167,8 +168,14 @@ class App(tk.Tk):
             name.pack(anchor="w")
             self.metric_widgets[key] = (value, name)
 
-        self.coverage_button = ttk.Button(content, command=self.show_coverage)
-        self.coverage_button.pack(anchor="w", pady=(0, 8))
+        review_bar = ttk.Frame(content, style="App.TFrame")
+        review_bar.pack(fill="x", pady=(0, 8))
+        self.coverage_button = ttk.Button(review_bar, command=self.show_coverage)
+        self.coverage_button.pack(side="left", padx=(0, 8))
+        self.summary_button = ttk.Button(review_bar, command=self.show_summary)
+        self.summary_button.pack(side="left")
+        self.filtered_export_button = ttk.Button(review_bar, command=self.export_filtered, state="disabled")
+        self.filtered_export_button.pack(side="left", padx=8)
         self.filter_bar = ttk.Frame(content, style="App.TFrame")
         self.filter_bar.pack(fill="x", pady=(0, 8))
         self.filter_buttons = {}
@@ -214,20 +221,28 @@ class App(tk.Tk):
         self.tree.bind("<<TreeviewSelect>>", self.show_selected_issue)
 
         self.details_frame = ttk.LabelFrame(content, padding=10)
-        self.details_frame.pack(fill="x", pady=(12, 0))
+        self.details_frame.pack(fill="x", side="bottom", pady=(12, 0))
         self.details = tk.Text(
             self.details_frame, height=5, wrap="word", borderwidth=0, background="#ffffff",
             foreground="#263832", font=("Microsoft YaHei UI", 9), padx=6, pady=4,
         )
-        self.details.pack(fill="x")
+        detail_scroll = ttk.Scrollbar(self.details_frame, command=self.details.yview)
+        detail_scroll.pack(side="right", fill="y")
+        self.details.configure(yscrollcommand=detail_scroll.set)
+        self.details.pack(fill="both", expand=True)
         self.details.configure(state="disabled")
+        # Reserve the details panel before allocating remaining space to the table.
+        table_frame.pack_forget()
+        table_frame.pack(fill="both", expand=True)
 
         self.status = ttk.Label(self, anchor="w", padding=(12, 5), background="#e3ebe8", foreground="#40514b")
-        self.status.pack(fill="x", side="bottom")
+        self.status.pack(fill="x", side="bottom", before=content)
 
     def _refresh_text(self) -> None:
         self.refresh_filters()
         self.coverage_button.configure(text="检查覆盖情况" if self.language == "zh" else "Check coverage")
+        self.summary_button.configure(text="问题概览" if self.language == "zh" else "Finding overview")
+        self.filtered_export_button.configure(text="导出当前筛选的问题" if self.language == "zh" else "Export filtered findings")
         self.title_label.configure(text=self.t["title"])
         self.subtitle_label.configure(text=self.t["subtitle"])
         self.choose_button.configure(text=self.t["choose"])
@@ -279,6 +294,7 @@ class App(tk.Tk):
             return
         self.busy = True
         for widget in (self.choose_button, self.export_button, self.language_button,
+                       self.filtered_export_button, self.summary_button,
                        self.search_entry, self.search_button, self.clear_button,
                        *self.filter_buttons.values()):
             widget.configure(state="disabled")
@@ -303,7 +319,7 @@ class App(tk.Tk):
             self.progress.stop()
             self.progress.configure(value=0)
             for widget in (self.choose_button, self.language_button, self.search_entry,
-                           self.search_button, self.clear_button):
+                           self.search_button, self.clear_button, self.summary_button):
                 widget.configure(state="normal")
             self.export_button.configure(state="normal" if self.result else "disabled")
             self.refresh_filters()
@@ -434,9 +450,61 @@ class App(tk.Tk):
             count = sum(key == "all" or i.rule == key or (key == "other" and i.rule not in primary) for i in issues)
             button.configure(text=f"{label} ({count:,})", state="disabled" if key == self.active_filter else "normal")
         count = len(self.filtered_issues())
+        self.filtered_export_button.configure(state="normal" if count and not self.busy else "disabled")
         query = self.search_query
-        self.filter_note.configure(text=(f"显示 {count:,} 条提示｜搜索：{query or '无'}｜分类计数为搜索前总数；导出包含全部结果。" if self.language == "zh"
-                                        else f"Showing {count:,} findings | Search: {query or 'none'} | Category totals are unsearched; export includes all results."))
+        self.filter_note.configure(text=(f"显示 {count:,} 条提示｜搜索：{query or '无'}｜分类计数为搜索前总数；完整报告不受筛选影响。" if self.language == "zh"
+                                        else f"Showing {count:,} findings | Search: {query or 'none'} | Category totals are unsearched; full reports ignore filters."))
+
+    def show_summary(self):
+        if not self.result or self.busy:
+            return
+        window = tk.Toplevel(self)
+        window.title("问题概览 / Finding overview")
+        window.geometry("950x440")
+        note = ("全文件汇总；各规则记录数分别去重，不能直接相加。双击规则查看对应问题（清除搜索）。"
+                if self.language == "zh" else
+                "Whole-file summary. Record counts overlap across rules; do not add them. Double-click a rule to review it (clears search).")
+        ttk.Label(window, text=note, wraplength=900, padding=12).pack(fill="x")
+        columns = ("rule", "findings", "affected_records", "unlocated_findings", "organisations", "products")
+        table = ttk.Treeview(window, columns=columns, show="headings")
+        titles = (["规则", "提示数", "关联记录数", "未定位到记录", "机构数", "药品数"] if self.language == "zh"
+                  else ["Rule", "Findings", "Records", "Unlocated", "Organisations", "Products"])
+        for col, title in zip(columns, titles):
+            table.heading(col, text=title)
+            table.column(col, width=290 if col == "rule" else 115, minwidth=70)
+        scroll = ttk.Scrollbar(window, command=table.yview)
+        scroll.pack(side="right", fill="y")
+        table.configure(yscrollcommand=scroll.set)
+        table.pack(fill="both", expand=True, padx=12, pady=12)
+        for item in summarise(self.result):
+            table.insert("", "end", iid=item["rule"], values=(self.rule_label(item["rule"]), *(item[k] for k in columns[1:])))
+        if not self.result.issues:
+            ttk.Label(window, text=self.t["passed"], padding=12).pack()
+
+        def review(_event):
+            if table.selection() and not self.busy:
+                self.search_query = ""
+                self.search_var.set("")
+                self.select_filter(table.selection()[0])
+                window.destroy()
+        table.bind("<Double-1>", review)
+
+    def export_filtered(self):
+        if self.busy or not self.result:
+            return
+        issues = self.filtered_issues()
+        if not issues:
+            return
+        selected = filedialog.askdirectory(title="保存筛选问题 / Save filtered findings")
+        if not selected:
+            return
+        result, query, category = self.result, self.search_query, self.active_filter
+        self._run_background(
+            lambda: write_filtered_findings(result, issues, selected, query=query, category=category),
+            lambda paths: messagebox.showinfo(self.t["exported"], "\n".join(str(p) for p in paths.values())),
+            "正在导出筛选问题…" if self.language == "zh" else "Exporting filtered findings…",
+            self.t["export_error"],
+        )
 
     def show_coverage(self) -> None:
         if not self.result:
@@ -462,6 +530,10 @@ class App(tk.Tk):
             return
         issue = self.issue_by_item[selected[0]]
         lines = [f"[{self.t[issue.severity]}] {self.finding_text(issue)}", f"Rule: {issue.rule}", issue.message]
+        record = record_for(self.result, issue)
+        for key, zh, en in (("VMP_PRODUCT_NAME", "药品", "Medicine"), ("ODS_CODE", "机构编码", "Organisation code"),
+                            ("YEAR_MONTH", "月份", "Month"), ("VMP_SNOMED_CODE", "药品编码", "Product code")):
+            lines.append(f"{zh if self.language == 'zh' else en}: {record.get(key) or '—'}")
         if issue.row:
             lines.append(f"{self.t['row']}: {issue.row}")
         if issue.column:
