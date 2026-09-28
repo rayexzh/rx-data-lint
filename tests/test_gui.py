@@ -90,6 +90,32 @@ class GuiTests(unittest.TestCase):
         self.app.toggle_language()
         self.assertEqual(self.app.filtered_issues(), before)
 
+    def test_details_include_associated_medicine_and_month(self):
+        self.app._render_result()
+        item, issue = next((key, value) for key, value in self.app.issue_by_item.items() if value.row)
+        self.app.tree.selection_set(item)
+        self.app.show_selected_issue()
+        record = self.app.result.cleaned_rows[issue.row - 2]
+        details = self.app.details.get("1.0", "end")
+        self.assertIn(record["VMP_PRODUCT_NAME"], details)
+        self.assertIn(record["ODS_CODE"], details)
+        self.assertIn(record["YEAR_MONTH"], details)
+
+    def test_filtered_export_has_only_selected_findings(self):
+        expected = self.search("负数")
+        self.assertTrue(expected)
+        with tempfile.TemporaryDirectory() as directory:
+            with patch("rxdatalint.gui.filedialog.askdirectory", return_value=directory), \
+                 patch("rxdatalint.gui.messagebox.showinfo") as success:
+                self.app.export_filtered()
+                self.pump_until(lambda: not self.app.busy)
+                success.assert_called_once()
+            payload = json.loads(next(Path(directory).glob("findings-*/filtered-findings.json")).read_text(encoding="utf-8"))
+            self.assertEqual(payload["selected_findings"], len(expected))
+            self.assertTrue(all(i["rule"] == "value.negative" for i in payload["findings"]))
+        self.search("no-such-product-xyz")
+        self.assertTrue(self.app.filtered_export_button.instate(["disabled"]))
+
     def test_record_search_and_category_intersect(self):
         issue = next(i for i in self.app.result.issues if i.rule == "value.negative")
         row = self.app.result.cleaned_rows[issue.row - 2]
