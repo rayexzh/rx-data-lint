@@ -124,3 +124,7 @@ MIT
 
 See [rule boundaries](docs/RULES.md) and the [v0.2 checklist](docs/V0.2-PLAN.zh-CN.md). Reports now include input SHA-256, byte size, check time, version metadata and distinct affected-record counts. These identify the checked input; they are not a compliance certificate. Processing remains in memory.
 
+
+## Finding search and cost completeness
+
+Use category buttons to filter findings, then enter a medicine name, organisation code, rule, field or value and press Search/Enter. Space-separated terms must all match (case-insensitive substrings). Search covers findings and their associated records, not every medicine record. Clear removes the search; exports always contain the full result. Blank indicative costs are warnings, preserved as missing rather than zero. The desktop and reports show missing-cost coverage by record count.
