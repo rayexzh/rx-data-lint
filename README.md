@@ -127,11 +127,18 @@ See [rule boundaries](docs/RULES.md) and the [v0.2 checklist](docs/V0.2-PLAN.zh-
 
 ## Finding search and cost completeness
 
-Use category buttons to filter findings, then enter a medicine name, organisation code, rule, field or value and press Search/Enter. Space-separated terms must all match (case-insensitive substrings). Search covers findings and their associated records, not every medicine record. Clear removes the search; exports always contain the full result. Blank indicative costs are warnings, preserved as missing rather than zero. The desktop and reports show missing-cost coverage by record count.
+Use category buttons to filter findings, then enter a medicine name, organisation code, rule, field or value and press Search/Enter. Space-separated terms must all match (case-insensitive substrings). Search covers findings and their associated records, not every medicine record. Clear removes the search; full-report exports always contain the full result. Blank indicative costs are warnings, preserved as missing rather than zero. The desktop and reports show missing-cost coverage by record count.
 
 
 ## Desktop responsiveness
 
-The desktop app validates CSV files and exports reports in a background worker, with an animated activity indicator (not a completion percentage). Duplicate imports, search, and export controls are paused while a task runs. Findings are rendered in batches; exports always include the complete result regardless of filters. Failed loads preserve the last successful result. Wait for export confirmation before closing the app: exiting during export may leave an incomplete report folder.
+The desktop app validates CSV files and exports reports in a background worker, with an animated activity indicator (not a completion percentage). Duplicate imports, search, and export controls are paused while a task runs. Findings are rendered in batches; full-report exports always include the complete result regardless of filters. Failed loads preserve the last successful result. Wait for export confirmation before closing the app: exiting during export may leave an incomplete report folder.
 
 See the bilingual [change log](CHANGELOG.md) for changes and verification.
+
+
+## Review workflow and Windows package
+
+Open **Finding overview** for whole-file rule summaries and double-click a rule to review it. Details show medicine, organisation and month. **Export filtered findings** saves only matching findings with context and an explicit scope; **Export full report** retains all results.
+
+See the bilingual [two-minute walkthrough](docs/QUICKSTART.md) for portable Windows instructions and building from source. Get the unsigned portable ZIP from [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.2.0-alpha.1).

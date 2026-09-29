@@ -1,5 +1,23 @@
 # Change log / 更新日志
 
+## v0.2.0-alpha.1 (2026-09-28) — Review workflow and Windows package / 复核流程与 Windows 运行包
+
+### English
+
+- Added whole-file rule summaries with finding, distinct associated-record, organisation and product counts. Double-click a rule to inspect it. Unlocated findings are counted separately.
+- Finding details now show medicine name/code, organisation code and month, with a scrollbar for long explanations.
+- Added a separate filtered-findings CSV/JSON export with search scope and source hash; full-report exports remain unchanged. Spreadsheet formula-like text is quoted in the filtered CSV; JSON preserves source text.
+- Added a Windows x64 portable build script, packaged application smoke test, SHA-256 checksum and bilingual two-minute walkthrough. Portable ZIPs are unsigned and have only been verified on the build machine; this is an alpha prerelease.
+- 32 local automated tests pass. Packaged smoke testing covers Tk startup, sample validation, search, language switching, overview and both export formats.
+
+### 简体中文
+
+- 新增全文件问题概览：按规则统计提示数、去重的关联记录数、机构数和药品数。双击规则查看问题；未定位到记录的提示单独计数。
+- 问题详情增加药品名称及编码、机构编码、月份，并提供滚动条。
+- 新增独立的筛选问题 CSV/JSON 导出，记录搜索范围和输入哈希；原有完整报告不变。筛选 CSV 的公式样式文本会加单引号，JSON 保留原始文本。
+- 新增 Windows x64 便携打包脚本、打包程序冒烟测试、SHA-256 校验文件和双语两分钟上手说明。运行包未签名，目前仅在打包电脑验证；此次作为 Alpha 预发布版提供。
+- 本地 32 项自动化测试通过。打包后的程序验证了 Tk 启动、示例检查、搜索、语言切换、概览和两类导出。
+
 ## 2026-09-28 — Desktop responsiveness / 桌面响应优化
 
 ### English
