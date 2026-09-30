@@ -80,13 +80,22 @@ def build(source: Path, output: Path, source_url: str):
             with (output / f"{query.stem}.csv").open("w", encoding="utf-8-sig", newline="") as handle:
                 writer = csv.writer(handle)
                 writer.writerow([c[0] for c in cursor.description])
-                writer.writerows([[safe_cell(v) for v in row] for row in cursor])
+                for row in cursor:
+                    if any(isinstance(value, float) and not math.isfinite(value) for value in row):
+                        raise ValueError(f"Non-finite aggregate in {query.name}; source amounts exceed the supported numeric range.")
+                    writer.writerow([safe_cell(value) for value in row])
         monthly = list(db.execute("SELECT month,COUNT(*),COUNT(cost_gbp),SUM(cost_gbp) FROM records GROUP BY month ORDER BY month"))
         lines = ["# SCMD local analysis / 本地分析摘要", "", f"Source: {source.name}", f"Source URL: {source_url}",
                  f"SHA-256: {result.source_sha256}", "", "| Month / 月份 | Records / 记录 | Known cost / 成本有效记录 | Known net indicative cost GBP / 已知净指示性成本 |", "|---|---:|---:|---:|"]
         for month, count, known, net in monthly:
-            lines.append(f"| {month or 'Invalid month / 无效月份'} | {count:,} | {known:,} | {net:,.2f} |" if net is not None else f"| {month} | {count:,} | 0 | unavailable |")
-        lines += ["", "Only one valid month: no trend conclusion. / 仅一个有效月份，不能得出趋势结论。" if len(metadata["months"]) == 1 else "Monthly totals are descriptive; organisation coverage may change. / 月度总额仅作描述，机构覆盖可能变化。",
+            label = month or "Invalid month / 无效月份"
+            amount = f"{net:,.2f}" if net is not None else "unavailable / 无可用成本"
+            lines.append(f"| {label} | {count:,} | {known:,} | {amount} |")
+        month_count = len(metadata["months"])
+        scope = ("No valid months: review date values before interpreting totals. / 没有有效月份，请先复核日期。" if month_count == 0
+                 else "Only one valid month: no trend conclusion. / 仅一个有效月份，不能得出趋势结论。" if month_count == 1
+                 else "Monthly totals are descriptive; organisation coverage may change. / 月度总额仅作描述，机构覆盖可能变化。")
+        lines += ["", scope,
                   "", "Known cost excludes missing/invalid amounts and retains negative adjustments; it is not actual procurement expenditure. / 已知成本不含缺失或无效金额，保留负数调整，不代表实际采购支出。",
                   "Findings are review prompts. Candidate duplicates are retained; findings counts are not defective-record counts. / 提示用于复核，疑似重复仍保留，提示数不等于错误记录数。"]
         (output / "SUMMARY.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

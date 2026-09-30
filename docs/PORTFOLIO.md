@@ -35,7 +35,7 @@ The known net indicative cost is **£2,425,349,659.23** including negatives. Exc
 ## Verification and scope
 
 - The complete supplied file ran through the workflow. Counts and rounded net/negative amounts were independently recalculated from the original CSV with Python Decimal and matched the exports.
-- 32 desktop tests and 8 analysis tests passed locally, including report contents, file verification and launcher workflows. See GitHub Actions for the status of the current commit.
+- 32 desktop tests and 12 analysis tests passed locally, including report contents, file verification and launcher workflows. See GitHub Actions for the status of the current commit.
 - A user-provided Power BI Desktop screenshot confirms a one-month Power Query preview with matching record, organisation, product and known-cost counts. Interactive visuals and a saved PBIX are pending.
 - External deployment, production qualification, customer adoption and time savings have not been demonstrated.
 
@@ -53,6 +53,6 @@ This work demonstrates data-quality reasoning, Python processing, SQL analysis, 
 - [Detailed bilingual case study and exact input hash](../analysis/CASE_STUDY.md)
 - [Start with the monthly SQL query](../analysis/sql/01_monthly_overview.sql)
 - [Power Query template](../analysis/powerbi/MonthlyReview.pq)
-- [Desktop download: v0.3.0-alpha.1](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.1)
+- [Desktop download: v0.3.0-alpha.2](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2)
 
 Source: [NHSBSA July 2026 resource and dictionary](https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-price/resource/4112eed6-b93a-4cfd-9582-c216d4416753). Contains public sector information licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/). Independent project; no NHS/NHSBSA endorsement.

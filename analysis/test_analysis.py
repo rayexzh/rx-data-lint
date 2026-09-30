@@ -14,6 +14,41 @@ from html_report import REPORT_FILES
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_malformed_manifest_is_rejected_cleanly(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for data in ([], None, {"analysis_format_version": "2", "artifacts": {"file": "a"*64}},
+                         {"analysis_format_version": 99, "artifacts": {"file": "a"*64}}):
+                (root / "manifest.json").write_text(json.dumps(data), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    verify(root)
+
+    def test_invalid_hash_and_unsafe_artifact_names_are_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for artifacts in ({"SUMMARY.md": "wrong"}, {"SUMMARY.md:stream": "a"*64}, {"../outside": "a"*64}):
+                (root / "manifest.json").write_text(json.dumps({"artifacts": artifacts}), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    verify(root)
+
+    def test_nonfinite_aggregate_does_not_produce_completed_run(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            self.sample(root / "overflow.csv", [("202607", "1e308"), ("202607", "1e308")])
+            with self.assertRaisesRegex(ValueError, "Non-finite aggregate"):
+                build(root / "overflow.csv", root / "output", "synthetic")
+            self.assertFalse((root / "output/manifest.json").exists())
+
+    def test_all_invalid_months_have_an_explicit_summary(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            self.sample(root / "invalid.csv", [("bad", "")])
+            build(root / "invalid.csv", root / "output", "synthetic")
+            summary = (root / "output/SUMMARY.md").read_text(encoding="utf-8")
+            self.assertIn("No valid months", summary)
+            self.assertIn("Invalid month", summary)
+            self.assertNotIn("| None |", summary)
+
     def sample(self, path, rows):
         with path.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.writer(handle)

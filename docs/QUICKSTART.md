@@ -53,4 +53,4 @@ python -m pip install pyinstaller==6.22.3
 python tools/build_windows_suite.py
 ```
 
-Output / 输出：`dist/RxDataLint-Windows-x64-v0.3.0-alpha.1.zip` and its SHA-256 file. The build script runs a packaged smoke test before creating the ZIP. Test on another Windows computer before calling the package broadly compatible.
+Output / 输出：`dist/RxDataLint-Windows-x64-v0.3.0-alpha.2.zip` and its SHA-256 file. The build script runs a packaged smoke test before creating the ZIP. Test on another Windows computer before calling the package broadly compatible.

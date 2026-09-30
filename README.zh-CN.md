@@ -1,6 +1,6 @@
 # RxDataLint
 
-**Windows 下载：** [v0.3.0-alpha.1 便携运行包](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.1) · [中英文启动说明](docs/WINDOWS-SUITE.md)。完整解压 ZIP 后，选择 Start-Checker.bat 或 Start-Analysis.bat。
+**Windows 下载：** [v0.3.0-alpha.2 便携运行包](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2) · [中英文启动说明](docs/WINDOWS-SUITE.md)。完整解压 ZIP 后，选择 Start-Checker.bat 或 Start-Analysis.bat。
 
 **新版离线分析报告：** [预览和下载七月中英文示例](analysis/examples/202607/README.md)。v0.3 便携包包含检查和分析两个程序；源码用户仍可双击 `run_analysis_desktop.bat`。
 
@@ -155,4 +155,4 @@ MIT
 
 点击“问题概览”查看全文件规则汇总，双击规则查看问题。详情展示药品、机构和月份。“导出当前筛选的问题”仅保存匹配提示及其范围；“导出完整报告”保留全部结果。
 
-使用方法与从源码打包步骤见双语[两分钟上手](docs/QUICKSTART.md)。从 [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.2.0-alpha.1) 下载未签名的便携 ZIP 预发布版。
+使用方法与从源码打包步骤见双语[两分钟上手](docs/QUICKSTART.md)。从 [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2) 下载未签名的便携 ZIP 预发布版。

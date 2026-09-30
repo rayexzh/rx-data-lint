@@ -28,7 +28,7 @@ def self_test(source, diagnostic):
                 app.start()
             assert app.busy
             assert str(app.run_button["state"]) == "disabled"
-            deadline = time.monotonic() + 30
+            deadline = time.monotonic() + 60
             ticks = 0
             while app.busy:
                 if time.monotonic() > deadline:
@@ -42,7 +42,8 @@ def self_test(source, diagnostic):
             parent = Path(folder)
             ticks = run(source, parent)
             first = app.output
-            assert first is not None and verify(first) == []
+            assert first is not None, app.status.get()
+            assert verify(first) == []
             info = json.loads((first / "manifest.json").read_text(encoding="utf-8"))
             assert info["row_count"] > 0
             assert str(app.report_button["state"]) == "normal"

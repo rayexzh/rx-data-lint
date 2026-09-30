@@ -35,7 +35,7 @@
 ## 验证与当前边界
 
 - 完整数据已运行，独立 Decimal 计算核对记录数、净成本和负数金额，结果与 SQL 一致。
-- 本地通过 32 项桌面测试和 8 项分析测试，覆盖报告内容、文件校验和分析启动流程。当前提交的远端状态请查看 GitHub Actions。
+- 本地通过 32 项桌面测试和 12 项分析测试，覆盖报告内容、文件校验和分析启动流程。当前提交的远端状态请查看 GitHub Actions。
 - 你的 Power BI 截图显示一行月度预览，记录数、机构数、药品数和已知成本记录数正确。交互图表和 PBIX 尚未完成。
 - 没有声称药厂部署、合规认证、外部客户采用或已实现节省时间。
 
@@ -58,6 +58,6 @@
 - [分析运行说明和指标口径](../analysis/README.zh-CN.md)
 - [详细中英文案例及文件哈希](../analysis/CASE_STUDY.md)
 - [第一条 SQL 中文讲解](../analysis/SQL_LESSON.zh-CN.md)
-- [桌面程序已发布版本](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.1)
+- [桌面程序已发布版本](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2)
 
 来源：[NHSBSA 2026 年 7 月 SCMD 页面及字典](https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-price/resource/4112eed6-b93a-4cfd-9582-c216d4416753)。Contains public sector information licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/). 独立项目，不表示 NHS/NHSBSA 背书。

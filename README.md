@@ -1,6 +1,6 @@
 # RxDataLint
 
-**Windows download:** [v0.3.0-alpha.1 portable suite](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.1) · [Bilingual startup guide](docs/WINDOWS-SUITE.md). Extract the entire ZIP and choose Start-Checker.bat or Start-Analysis.bat.
+**Windows download:** [v0.3.0-alpha.2 portable suite](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2) · [Bilingual startup guide](docs/WINDOWS-SUITE.md). Extract the entire ZIP and choose Start-Checker.bat or Start-Analysis.bat.
 
 **Offline analysis reports:** [Preview and download the bilingual July 2026 example](analysis/examples/202607/README.md). The v0.3 portable suite includes both the checker and analysis programs; `run_analysis_desktop.bat` remains the source launcher.
 
@@ -151,4 +151,4 @@ See the bilingual [change log](CHANGELOG.md) for changes and verification.
 
 Open **Finding overview** for whole-file rule summaries and double-click a rule to review it. Details show medicine, organisation and month. **Export filtered findings** saves only matching findings with context and an explicit scope; **Export full report** retains all results.
 
-See the bilingual [two-minute walkthrough](docs/QUICKSTART.md) for portable Windows instructions and building from source. Get the unsigned portable ZIP from [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.2.0-alpha.1).
+See the bilingual [two-minute walkthrough](docs/QUICKSTART.md) for portable Windows instructions and building from source. Get the unsigned portable ZIP from [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2).

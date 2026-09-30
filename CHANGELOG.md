@@ -1,5 +1,11 @@
 # Change log / 更新日志
 
+## v0.3.0-alpha.2 (2026-09-30) — Analysis boundary fixes / 分析边界修复
+
+- Reject malformed manifests, unsupported versions, unsafe artifact names and invalid hash formats with actionable errors. / 校验文件异常时给出明确错误。
+- Stop non-finite SQL aggregates before writing a completion manifest; label missing cost and invalid months explicitly. / 数值汇总溢出时停止，不生成完成清单；明确显示缺失成本和无效月份。
+- Improved packaged error diagnostics. Local verification: 32 checker tests and 12 analysis tests passed. See the release validation attachment for executable checks and limits. / 改进 EXE 错误诊断，本地 44 项测试通过，EXE 测试范围见发布附件。
+
 ## v0.3.0-alpha.1 (2026-09-30) — Portable analysis suite / 便携分析运行包
 
 - Added self-contained Chinese and English HTML analysis reports with per-month completeness, cost-sensitivity charts, review guidance and provenance. No extra runtime dependencies or network access are required.
