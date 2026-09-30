@@ -23,4 +23,5 @@ jobs:
         run: |
           $env:PYTHONPATH = "src"
           python -m unittest discover -s tests -v
+          python -m unittest discover -s analysis -p 'test_*.py' -v
           python -m compileall -q app.py src tests

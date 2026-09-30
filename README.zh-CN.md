@@ -1,5 +1,9 @@
 # RxDataLint
 
+**作品集入口：** [业务问题、实现、图表和验证情况](docs/PORTFOLIO.zh-CN.md)。2026 年 7 月案例展示排除负数造成约 £1,031.76 万的汇总差异；这是处理场景对比，不是节省金额。
+
+**配套 SQL 分析案例：** [NHS 药品数据分析](analysis/README.zh-CN.md) 使用现有检查规则，生成本地 SQLite 数据库及五份可导入 Power BI 的汇总。[2026 年 7 月案例](analysis/CASE_STUDY.md) 展示负数记录如何影响成本汇总。
+
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 [![Tests](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml/badge.svg)](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml)

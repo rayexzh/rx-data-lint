@@ -1,0 +1,28 @@
+{
+  "month": "2026-07",
+  "source_sha256": "58e1975007eb2272a0845c01ed621d437b732242bebc9602af3f2cdf372bd427",
+  "source_url": "https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-price/resource/4112eed6-b93a-4cfd-9582-c216d4416753",
+  "matplotlib_version": "3.11.2",
+  "coverage": {
+    "month": "2026-07",
+    "records": "319345",
+    "observed_organisations": "192",
+    "observed_products": "8366",
+    "known_cost_records": "306872",
+    "missing_cost_records": "12473",
+    "invalid_cost_records": "0",
+    "known_cost_record_percent": "96.0942",
+    "known_net_indicative_cost_gbp": "2425349659.23"
+  },
+  "costs": {
+    "month": "2026-07",
+    "records": "319345",
+    "known_cost_records": "306872",
+    "missing_cost_records": "12473",
+    "invalid_cost_records": "0",
+    "negative_cost_records": "2340",
+    "known_net_indicative_cost_gbp": "2425349659.23",
+    "nonnegative_only_cost_gbp": "2435667222.53",
+    "negative_component_gbp": "-10317563.3"
+  }
+}

@@ -9,3 +9,6 @@ build/
 outputs/*
 !outputs/.gitkeep
 work/
+analysis/output/
+analysis/data/
+*.sqlite

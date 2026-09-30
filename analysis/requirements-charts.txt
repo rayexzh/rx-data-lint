@@ -1,0 +1,2 @@
+# Optional plotting dependency; not needed by RxDataLint or the SQL analysis.
+matplotlib>=3.8,<4

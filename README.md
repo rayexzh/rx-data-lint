@@ -1,5 +1,9 @@
 # RxDataLint
 
+**Portfolio overview:** [Problem, implementation, figures and verification](docs/PORTFOLIO.md). The July 2026 case shows a £10.32m difference caused by excluding negative costs; this is a processing sensitivity, not a saving.
+
+**Companion SQL case study:** [NHS Medicines Analytics](analysis/README.md) builds a local SQLite database and five Power BI-ready summaries using the same validation rules. [July 2026 findings](analysis/CASE_STUDY.md) demonstrate how negative records affect cost reporting.
+
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 [![Tests](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml/badge.svg)](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml)
