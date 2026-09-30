@@ -1,5 +1,9 @@
 # RxDataLint
 
+**Offline analysis reports:** [Preview and download the bilingual July 2026 example](analysis/examples/202607/README.md). Run `run_analysis_desktop.bat` for the new analysis launcher; the published checker EXE is unchanged.
+
+[Portfolio roadmap: current maintenance boundary and the next synthetic quality-data project](docs/PORTFOLIO_ROADMAP.md)
+
 **Portfolio overview:** [Problem, implementation, figures and verification](docs/PORTFOLIO.md). The July 2026 case shows a £10.32m difference caused by excluding negative costs; this is a processing sensitivity, not a saving.
 
 **Companion SQL case study:** [NHS Medicines Analytics](analysis/README.md) builds a local SQLite database and five Power BI-ready summaries using the same validation rules. [July 2026 findings](analysis/CASE_STUDY.md) demonstrate how negative records affect cost reporting.

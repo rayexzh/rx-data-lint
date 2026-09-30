@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from rxdatalint.validator import validate_csv, MONTH_RE, RULESET_VERSION
 from rxdatalint import __version__
 from rxdatalint.schema import REQUIRED_COLUMNS
+from html_report import render_reports
 
 
 def number(value):
@@ -65,6 +66,7 @@ def build(source: Path, output: Path, source_url: str):
                        [(i.rule, i.severity, i.row, i.column, i.message) for i in result.issues])
         db.commit()
         metadata = {
+            "analysis_format_version": 2,
             "source_file": source.name, "source_url": source_url,
             "source_sha256": result.source_sha256, "checked_at_utc": result.checked_at_utc,
             "tool_version": __version__, "ruleset_version": RULESET_VERSION,
@@ -79,7 +81,6 @@ def build(source: Path, output: Path, source_url: str):
                 writer = csv.writer(handle)
                 writer.writerow([c[0] for c in cursor.description])
                 writer.writerows([[safe_cell(v) for v in row] for row in cursor])
-        (output / "manifest.json").write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
         monthly = list(db.execute("SELECT month,COUNT(*),COUNT(cost_gbp),SUM(cost_gbp) FROM records GROUP BY month ORDER BY month"))
         lines = ["# SCMD local analysis / 本地分析摘要", "", f"Source: {source.name}", f"Source URL: {source_url}",
                  f"SHA-256: {result.source_sha256}", "", "| Month / 月份 | Records / 记录 | Known cost / 成本有效记录 | Known net indicative cost GBP / 已知净指示性成本 |", "|---|---:|---:|---:|"]
@@ -89,6 +90,11 @@ def build(source: Path, output: Path, source_url: str):
                   "", "Known cost excludes missing/invalid amounts and retains negative adjustments; it is not actual procurement expenditure. / 已知成本不含缺失或无效金额，保留负数调整，不代表实际采购支出。",
                   "Findings are review prompts. Candidate duplicates are retained; findings counts are not defective-record counts. / 提示用于复核，疑似重复仍保留，提示数不等于错误记录数。"]
         (output / "SUMMARY.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        render_reports(db, metadata, output)
+        db.close()
+        metadata["artifacts"] = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                                 for p in sorted(output.iterdir()) if p.is_file() and p.name != "manifest.json"}
+        (output / "manifest.json").write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
         return metadata
     finally:
         db.close()

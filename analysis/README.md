@@ -34,7 +34,7 @@ Choose a **new output folder** for each run. Existing folders are refused to pre
 | 04_findings_by_rule.sql | Which review rules trigger? A LEFT JOIN retains unlocated findings. |
 | 05_cost_sensitivity.sql | How would dropping negative cost records change reported totals? Month-level scenario. |
 
-The output contains `medicines.sqlite`, five CSV summaries, a bilingual `SUMMARY.md`, and `manifest.json` with input SHA-256, source URL, validator/ruleset versions, time and rule coverage. Query files are readable learning materials. In SQLite, try:
+The output contains `medicines.sqlite`, five CSV summaries, a bilingual `SUMMARY.md`, standalone `REPORT.en.html` and `REPORT.zh-CN.html`, and `manifest.json` with input SHA-256, source URL, validator/ruleset versions, time and rule coverage. Query files are readable learning materials. In SQLite, try:
 
 ```sql
 SELECT month, ods_code, product_code, cost_gbp, cost_status
@@ -65,3 +65,17 @@ Start with two pages: (1) monthly overview, Top N product costs and organisation
 The [NHSBSA July 2026 resource and dictionary](https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-price/resource/4112eed6-b93a-4cfd-9582-c216d4416753) identify this as provisional SCMD with indicative price, licensed under [OGL v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/). Contains public sector information licensed under the Open Government Licence v3.0. Source: NHS Business Services Authority. This independent analysis does not imply NHS/NHSBSA endorsement.
 
 Download the source separately. Local input/output folders and SQLite files are ignored by Git. Source data licensing is separate from the repository's MIT code licence.
+
+## Verify an analysis run
+
+Run `python analysis/verify_analysis.py analysis/output/202607` after generating a new analysis. The manifest records SHA-256 hashes for the database, five CSV summaries, bilingual summary and HTML reports. Missing or changed files produce a nonzero exit code. Older outputs must be regenerated to obtain artifact hashes. This checks consistency with the local manifest; it does not authenticate the manifest, certify source accuracy or establish regulatory compliance.
+
+## Desktop analysis launcher
+
+On Windows, double-click `run_analysis_desktop.bat` in the repository root, or run `python analysis/desktop.py`. Select the SCMD CSV, enter its official source URL (`synthetic` for generated examples), then click **Generate & verify** and choose a parent output folder. Each run creates its own new subfolder, keeping earlier runs intact. Processing runs in the background; the window shows completion or failure and opens the results folder on request. No data is uploaded. Python 3.10+ with Tkinter is required. This launcher is separate from the released checker executable; offline report charts are generated without extra packages; a PBIX is not generated.
+
+## Shareable offline report
+
+Each new run generates Chinese and English HTML reports with monthly cost completeness, an inline cost-sensitivity chart, rule-level findings and review guidance, and source/version metadata. Open either file in a browser; the desktop launcher provides report buttons. All styling and charts are embedded, with no scripts or external assets. Keep both HTML files together to use the language link, or share either one independently. Review source metadata and aggregates before sharing. Browser printing can save a PDF, but PDF layout is not automatically verified.
+
+Reports are included in format-v2 artifact hashes. Previous hashed runs remain checkable, but must be regenerated to obtain the new reports. Null costs and invalid-month groups remain explicit; the report does not automatically correct data or certify compliance.

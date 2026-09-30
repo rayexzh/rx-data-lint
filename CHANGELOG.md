@@ -1,5 +1,19 @@
 # Change log / 更新日志
 
+## Unreleased — Analysis reports / 分析报告（2026-09-30）
+
+- Added self-contained Chinese and English HTML analysis reports with per-month completeness, cost-sensitivity charts, review guidance and provenance. No extra runtime dependencies or network access are required.
+- Added artifact hashes and file verification, preserving compatibility with previous hashed runs. Reports show NULL costs and invalid-month groups explicitly; differences are not presented as savings.
+- Added a separate desktop analysis launcher with background processing, unique result folders and report-opening buttons. It is not yet included in the published checker EXE.
+- Documented the portfolio scope and a planned synthetic quality-operations project; planned work is not represented as completed functionality.
+- Local validation: 32 desktop tests and 8 analysis tests passed; the complete 319,345-record July file produced matching report totals and verified artifacts. Report layout was inspected in a local browser. Check GitHub Actions for this commit's CI status; the published checker EXE does not include this source update.
+
+- 新增可独立打开的中英文 HTML 报告，展示各月完整率、成本处理差异图、复核建议和来源；无额外运行依赖、无需联网。
+- 新增文件哈希与校验，仍支持旧版已记录哈希的输出。报告保留未知成本和无效月份，差额不描述为节省。
+- 新增独立桌面分析入口：后台运行、独立结果文件夹和报告按钮；尚未包含在已发布检查程序的 EXE 中。
+- 记录作品集范围和下一项模拟质量业务项目；规划不表示功能已实现。
+- 本地验证：32 项桌面测试和 8 项分析测试通过；完整 319,345 条七月记录的报告数字已核对，输出文件校验通过，并检查了本地浏览器排版。当前提交的远端状态请查看 GitHub Actions；已发布的检查程序 EXE 尚不包含此次源码更新。
+
 ## v0.2.0-alpha.1 (2026-09-28) — Review workflow and Windows package / 复核流程与 Windows 运行包
 
 ### English

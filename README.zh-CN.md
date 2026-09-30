@@ -1,5 +1,9 @@
 # RxDataLint
 
+**新版离线分析报告：** [预览和下载七月中英文示例](analysis/examples/202607/README.md)。双击 `run_analysis_desktop.bat` 启动分析入口；已有检查程序 EXE 尚未包含该入口。
+
+[作品集路线：Rx 的维护边界及下一项模拟质量数据项目](docs/PORTFOLIO_ROADMAP.md)
+
 **作品集入口：** [业务问题、实现、图表和验证情况](docs/PORTFOLIO.zh-CN.md)。2026 年 7 月案例展示排除负数造成约 £1,031.76 万的汇总差异；这是处理场景对比，不是节省金额。
 
 **配套 SQL 分析案例：** [NHS 药品数据分析](analysis/README.zh-CN.md) 使用现有检查规则，生成本地 SQLite 数据库及五份可导入 Power BI 的汇总。[2026 年 7 月案例](analysis/CASE_STUDY.md) 展示负数记录如何影响成本汇总。

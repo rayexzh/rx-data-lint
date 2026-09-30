@@ -59,3 +59,17 @@ python analysis/run_analysis.py "D:/xiazai/scmd_provisional_202607.csv" --output
 Contains public sector information licensed under the Open Government Licence v3.0. Source: NHS Business Services Authority.
 
 本项目为独立分析，不表示 NHS/NHSBSA 背书。代码采用仓库 MIT 许可，数据许可单独适用。真实原始文件和生成的数据库、汇总结果暂留本地，不加入 Git。
+
+## 校验分析输出
+
+生成新分析后运行 `python analysis/verify_analysis.py analysis/output/202607`。运行记录保存数据库、五份 CSV 汇总、双语摘要和 HTML 报告的 SHA-256；文件缺失或被改动时，检查失败并返回非零退出码。旧输出需要重新生成才能获得文件哈希。这只检查文件与本地运行记录是否一致，不验证运行记录本身的真实性，也不代表数据准确或合规认证。
+
+## 桌面一键分析
+
+Windows 下双击项目根目录的 `run_analysis_desktop.bat`，或在 PyCharm 中运行 `analysis/desktop.py`。选择 SCMD CSV，填写官方来源链接（示例数据填写 `synthetic`），点击“生成并校验”，选择保存位置。每次创建独立结果子文件夹，不覆盖旧结果。分析在后台进行，完成后可点击“打开结果文件夹”；失败时请勿使用部分输出。数据不会上传。需要 Python 3.10 及以上和 Tkinter。此入口独立于已发布的数据检查程序 EXE，会自动生成离线报告及内嵌图表，不生成 PBIX。
+
+## 可分享的离线报告
+
+每次新分析都会生成 `REPORT.zh-CN.html` 和 `REPORT.en.html`，展示月度成本完整率、负数处理差异图、规则提示及复核建议、来源与版本信息。桌面分析窗口提供中文及英文报告按钮。报告的样式和图表均内嵌，无脚本、无需联网或额外安装绘图库。语言切换需要两份文件放在一起；单份文件也可独立分享。分享前请检查来源信息与汇总指标。浏览器打印可保存 PDF，但 PDF 排版未自动验证。
+
+两份报告包含在新版文件哈希中；旧版已记录哈希的输出仍可校验，需要重新运行才会获得报告。未知成本和无效月份分组仍保留，报告不自动修正数据或认证合规。

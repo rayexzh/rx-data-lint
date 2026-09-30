@@ -20,6 +20,8 @@ RxDataLint adds a bilingual desktop review step with search, finding summaries, 
 
 Five SQL queries cover monthly summaries, product-cost rankings, organisation coverage, rule findings and negative-cost sensitivity. They demonstrate aggregation, CTEs, a LEFT JOIN and a ranking window function. Reproducible PNG/SVG figures communicate the results.
 
+[Preview the bilingual offline report](../analysis/examples/202607/README.md).
+
 ## Findings
 
 ![Cost completeness by record count](../analysis/figures/202607/cost_completeness.png)
@@ -33,7 +35,7 @@ The known net indicative cost is **£2,425,349,659.23** including negatives. Exc
 ## Verification and scope
 
 - The complete supplied file ran through the workflow. Counts and rounded net/negative amounts were independently recalculated from the original CSV with Python Decimal and matched the exports.
-- The desktop and analysis code passed 32 existing tests and 3 analysis tests locally. See GitHub Actions for the CI status of the current commit; local test results do not imply a remote CI pass.
+- 32 desktop tests and 8 analysis tests passed locally, including report contents, file verification and launcher workflows. See GitHub Actions for the status of the current commit.
 - A user-provided Power BI Desktop screenshot confirms a one-month Power Query preview with matching record, organisation, product and known-cost counts. Interactive visuals and a saved PBIX are pending.
 - External deployment, production qualification, customer adoption and time savings have not been demonstrated.
 
