@@ -126,7 +126,11 @@ class AnalysisWindow:
             self.root.destroy()
 
 
-if __name__ == "__main__":
+def main():
     root = tk.Tk()
     AnalysisWindow(root)
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

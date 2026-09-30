@@ -1,5 +1,7 @@
 # Two-minute walkthrough / 两分钟上手
 
+For the v0.3 two-program suite, start with [Windows suite guide](WINDOWS-SUITE.md). / v0.3 两个程序的运行包请先阅读[便携包启动说明](WINDOWS-SUITE.md)。
+
 ## 简体中文
 
 ### 启动
@@ -48,7 +50,7 @@ On Windows with Python and Tkinter / 在含 Tkinter 的 Windows Python 环境中
 
 ```powershell
 python -m pip install pyinstaller==6.22.3
-python tools/build_windows.py
+python tools/build_windows_suite.py
 ```
 
-Output / 输出：`dist/RxDataLint-Windows-x64.zip` and its SHA-256 file. The build script runs a packaged smoke test before creating the ZIP. Test on another Windows computer before calling the package broadly compatible.
+Output / 输出：`dist/RxDataLint-Windows-x64-v0.3.0-alpha.1.zip` and its SHA-256 file. The build script runs a packaged smoke test before creating the ZIP. Test on another Windows computer before calling the package broadly compatible.

@@ -53,6 +53,6 @@ This work demonstrates data-quality reasoning, Python processing, SQL analysis, 
 - [Detailed bilingual case study and exact input hash](../analysis/CASE_STUDY.md)
 - [Start with the monthly SQL query](../analysis/sql/01_monthly_overview.sql)
 - [Power Query template](../analysis/powerbi/MonthlyReview.pq)
-- [Desktop download: v0.2.0-alpha.1](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.2.0-alpha.1)
+- [Desktop download: v0.3.0-alpha.1](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.1)
 
 Source: [NHSBSA July 2026 resource and dictionary](https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-price/resource/4112eed6-b93a-4cfd-9582-c216d4416753). Contains public sector information licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/). Independent project; no NHS/NHSBSA endorsement.

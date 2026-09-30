@@ -1,6 +1,8 @@
 # RxDataLint
 
-**新版离线分析报告：** [预览和下载七月中英文示例](analysis/examples/202607/README.md)。双击 `run_analysis_desktop.bat` 启动分析入口；已有检查程序 EXE 尚未包含该入口。
+**Windows 下载：** [v0.3.0-alpha.1 便携运行包](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.1) · [中英文启动说明](docs/WINDOWS-SUITE.md)。完整解压 ZIP 后，选择 Start-Checker.bat 或 Start-Analysis.bat。
+
+**新版离线分析报告：** [预览和下载七月中英文示例](analysis/examples/202607/README.md)。v0.3 便携包包含检查和分析两个程序；源码用户仍可双击 `run_analysis_desktop.bat`。
 
 [作品集路线：Rx 的维护边界及下一项模拟质量数据项目](docs/PORTFOLIO_ROADMAP.md)
 

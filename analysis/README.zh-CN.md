@@ -66,7 +66,7 @@ Contains public sector information licensed under the Open Government Licence v3
 
 ## 桌面一键分析
 
-Windows 下双击项目根目录的 `run_analysis_desktop.bat`，或在 PyCharm 中运行 `analysis/desktop.py`。选择 SCMD CSV，填写官方来源链接（示例数据填写 `synthetic`），点击“生成并校验”，选择保存位置。每次创建独立结果子文件夹，不覆盖旧结果。分析在后台进行，完成后可点击“打开结果文件夹”；失败时请勿使用部分输出。数据不会上传。需要 Python 3.10 及以上和 Tkinter。此入口独立于已发布的数据检查程序 EXE，会自动生成离线报告及内嵌图表，不生成 PBIX。
+Windows 下双击项目根目录的 `run_analysis_desktop.bat`，或在 PyCharm 中运行 `analysis/desktop.py`。选择 SCMD CSV，填写官方来源链接（示例数据填写 `synthetic`），点击“生成并校验”，选择保存位置。每次创建独立结果子文件夹，不覆盖旧结果。分析在后台进行，完成后可点击“打开结果文件夹”；失败时请勿使用部分输出。数据不会上传。需要 Python 3.10 及以上和 Tkinter。v0.3 Windows 便携包将此入口打包为独立的 Analysis/RxDataLintAnalysis.exe，按设计不需要另行安装 Python。会自动生成离线报告及内嵌图表，不生成 PBIX。
 
 ## 可分享的离线报告
 

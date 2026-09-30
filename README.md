@@ -1,6 +1,8 @@
 # RxDataLint
 
-**Offline analysis reports:** [Preview and download the bilingual July 2026 example](analysis/examples/202607/README.md). Run `run_analysis_desktop.bat` for the new analysis launcher; the published checker EXE is unchanged.
+**Windows download:** [v0.3.0-alpha.1 portable suite](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.1) · [Bilingual startup guide](docs/WINDOWS-SUITE.md). Extract the entire ZIP and choose Start-Checker.bat or Start-Analysis.bat.
+
+**Offline analysis reports:** [Preview and download the bilingual July 2026 example](analysis/examples/202607/README.md). The v0.3 portable suite includes both the checker and analysis programs; `run_analysis_desktop.bat` remains the source launcher.
 
 [Portfolio roadmap: current maintenance boundary and the next synthetic quality-data project](docs/PORTFOLIO_ROADMAP.md)
 

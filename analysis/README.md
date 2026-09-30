@@ -72,7 +72,7 @@ Run `python analysis/verify_analysis.py analysis/output/202607` after generating
 
 ## Desktop analysis launcher
 
-On Windows, double-click `run_analysis_desktop.bat` in the repository root, or run `python analysis/desktop.py`. Select the SCMD CSV, enter its official source URL (`synthetic` for generated examples), then click **Generate & verify** and choose a parent output folder. Each run creates its own new subfolder, keeping earlier runs intact. Processing runs in the background; the window shows completion or failure and opens the results folder on request. No data is uploaded. Python 3.10+ with Tkinter is required. This launcher is separate from the released checker executable; offline report charts are generated without extra packages; a PBIX is not generated.
+On Windows, double-click `run_analysis_desktop.bat` in the repository root, or run `python analysis/desktop.py`. Select the SCMD CSV, enter its official source URL (`synthetic` for generated examples), then click **Generate & verify** and choose a parent output folder. Each run creates its own new subfolder, keeping earlier runs intact. Processing runs in the background; the window shows completion or failure and opens the results folder on request. No data is uploaded. Python 3.10+ with Tkinter is required. The v0.3 Windows portable suite also includes this launcher as Analysis/RxDataLintAnalysis.exe; a separate Python installation is not required by design. Offline report charts are generated without extra packages; a PBIX is not generated.
 
 ## Shareable offline report
 

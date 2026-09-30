@@ -58,6 +58,6 @@
 - [分析运行说明和指标口径](../analysis/README.zh-CN.md)
 - [详细中英文案例及文件哈希](../analysis/CASE_STUDY.md)
 - [第一条 SQL 中文讲解](../analysis/SQL_LESSON.zh-CN.md)
-- [桌面程序已发布版本](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.2.0-alpha.1)
+- [桌面程序已发布版本](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.1)
 
 来源：[NHSBSA 2026 年 7 月 SCMD 页面及字典](https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-price/resource/4112eed6-b93a-4cfd-9582-c216d4416753)。Contains public sector information licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/). 独立项目，不表示 NHS/NHSBSA 背书。
