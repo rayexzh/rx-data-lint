@@ -1,8 +1,8 @@
 # RxDataLint
 
-**NHS 药品数据复核与本地 SQL 分析 · v0.4.0-alpha.1**
+**NHS 药品数据复核与本地 SQL 分析 · v0.4.0-alpha.2**
 
-[English](README.md) · [Windows 下载](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.1) · [动画操作视频](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [文档导航](docs/INDEX.md)
+[English](README.md) · [Windows 下载](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.2) · [动画操作视频](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [文档导航](docs/INDEX.md)
 
 RxDataLint 帮助你在解读 SCMD 药品统计之前复核 CSV 数据。一个项目包含同一流程的两个入口：
 
@@ -163,3 +163,5 @@ MIT
 点击“问题概览”查看全文件规则汇总，双击规则查看问题。详情展示药品、机构和月份。“导出当前筛选的问题”仅保存匹配提示及其范围；“导出完整报告”保留全部结果。
 
 使用方法与从源码打包步骤见双语[两分钟上手](docs/QUICKSTART.md)。从 [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2) 下载未签名的便携 ZIP 预发布版。
+
+[Scripted usability review / 模拟试用与修复](docs/SIMULATED-USABILITY-REVIEW.md)

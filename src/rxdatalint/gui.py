@@ -12,7 +12,7 @@ import tkinter.font as tkfont
 from .reports import write_outputs
 from .review import record_for, summarise, write_filtered_findings
 from .validator import Issue, validate_csv
-from .presentation import configure_theme, enable_dpi_awareness, sample_path
+from .presentation import configure_theme, enable_dpi_awareness, sample_path, layout_flow
 
 
 TEXT = {
@@ -141,7 +141,7 @@ class App(tk.Tk):
         self._wrap_content()
 
     def _wrap_content(self, event=None):
-        width = max(850, self.canvas.winfo_width()-28)
+        width = max(200, self.canvas.winfo_width()-28)
         for label in (self.workflow, self.filter_note, self.file_label):
             label.configure(wraplength=width)
         label_font = tkfont.nametofont("TkDefaultFont", self)
@@ -151,8 +151,25 @@ class App(tk.Tk):
             self.metrics_frame.columnconfigure(i, weight=1 if i < columns else 0, uniform="metrics" if i < columns else "")
         for i,card in enumerate(self.metric_cards):
             card.grid(row=i//columns, column=i%columns, sticky="nsew", padx=(0,8), pady=(0,8))
-        self.subtitle_label.configure(wraplength=max(450,width-350))
+        self.subtitle_label.configure(wraplength=max(200,self.winfo_width()-52))
+        for frame, buttons in self.button_rows:
+            layout_flow(frame, buttons, width)
+        self.layout_search(width)
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def layout_search(self, width):
+        widgets = (self.search_label, self.search_entry, self.search_button, self.clear_button)
+        for widget in widgets:
+            if widget.winfo_manager() == "pack":
+                widget.pack_forget()
+        required = sum(widget.winfo_reqwidth() for widget in (self.search_label, self.search_button, self.clear_button)) + 184
+        wide = width >= required
+        for column in range(4):
+            self.search_bar.columnconfigure(column, weight=1 if column == 1 else 0, minsize=160 if wide and column == 1 else 0)
+        self.search_label.grid(row=0,column=0,sticky="w",padx=(0,8))
+        self.search_entry.grid(row=0,column=1,columnspan=1 if wide else 3,sticky="ew",padx=(0,8))
+        self.search_button.grid(row=0 if wide else 1,column=2 if wide else 0,sticky="w",padx=(0,8),pady=4)
+        self.clear_button.grid(row=0 if wide else 1,column=3 if wide else 1,sticky="w",pady=4)
 
     def focus_details(self, event=None):
         self.show_selected_issue()
@@ -169,7 +186,6 @@ class App(tk.Tk):
         header = ttk.Frame(self, style="Header.TFrame", padding=(26, 12))
         header.pack(fill="x")
         view_controls = ttk.Frame(header, style="Header.TFrame")
-        view_controls.pack(side="right", anchor="n")
         self.language_button = ttk.Button(view_controls, command=self.toggle_language)
         self.language_button.pack(side="left", padx=4)
         self.theme_button = ttk.Button(view_controls, command=self.toggle_theme)
@@ -182,6 +198,7 @@ class App(tk.Tk):
         self.title_label.pack(anchor="w")
         self.subtitle_label = ttk.Label(header, style="Subtitle.TLabel")
         self.subtitle_label.pack(anchor="w", pady=(3, 0))
+        view_controls.pack(fill="x", pady=(8,0))
 
         body = ttk.Frame(self, style="App.TFrame")
         body.pack(fill="both", expand=True)
@@ -240,7 +257,12 @@ class App(tk.Tk):
             button = ttk.Button(self.filter_bar, command=lambda k=key: self.select_filter(k))
             button.pack(side="left", padx=(0, 6))
             self.filter_buttons[key] = button
-        search_bar = ttk.Frame(content, style="App.TFrame")
+        self.button_rows = [(toolbar, [self.choose_button, self.sample_button, self.export_button]),
+                            (review_bar, [self.coverage_button, self.summary_button, self.filtered_export_button]),
+                            (self.filter_bar, list(self.filter_buttons.values()))]
+        for frame, buttons in self.button_rows:
+            frame.bind("<Configure>", lambda event, container=frame, items=buttons: layout_flow(container, items, event.width))
+        self.search_bar = search_bar = ttk.Frame(content, style="App.TFrame")
         search_bar.pack(fill="x", pady=(0, 8))
         self.search_label = ttk.Label(search_bar, style="Muted.TLabel")
         self.search_label.pack(side="left")

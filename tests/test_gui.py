@@ -57,6 +57,21 @@ class GuiTests(unittest.TestCase):
         self.assertFalse(self.app.export_button.instate(["disabled"]))
         self.assertEqual(self.app.progress.winfo_manager(), "")
 
+    def test_all_categories_are_accessible_at_minimum_size_and_largest_font(self):
+        app = self.app
+        app.deiconify()
+        app.geometry("900x600")
+        app.toggle_language()
+        app.adjust_font(4)
+        app._render_result()
+        for _ in range(4):
+            app.update()
+        for button in [*app.filter_buttons.values(), app.search_button, app.clear_button]:
+            self.assertTrue(button.winfo_ismapped())
+            self.assertGreaterEqual(button.winfo_width(), button.winfo_reqwidth())
+            self.assertLessEqual(button.winfo_x()+button.winfo_width(), button.master.winfo_width())
+        self.assertGreaterEqual(app.title_label.winfo_width(), app.title_label.winfo_reqwidth())
+
     def test_background_check_keeps_event_loop_live_and_blocks_duplicate_load(self):
         release = Event()
         self.addCleanup(release.set)

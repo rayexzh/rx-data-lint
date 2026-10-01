@@ -1,5 +1,12 @@
 # Change log / 更新日志
 
+## v0.4.0-alpha.2 (2026-10-01) — Readable controls and report identity / 布局与报告对应关系
+
+- Keep titles readable and wrap category, export and search controls at small window sizes and large fonts. / 窄窗口、大字体下完整显示标题与操作按钮。
+- SQL reports show their original input and source; edited inputs display a pending-analysis notice without deleting previous results. / 区分新输入与旧报告。
+- Validation: 35 checker tests and 15 analysis tests passed; the new regressions also run in the packaged diagnostics. / 本地 50 项源码测试通过，EXE 自检增加对应检查。
+- Findings came from scripted native-interface simulation, not external user research. The alpha.1 animation remains a labelled earlier-version walkthrough. / 明确模拟试用与旧演示版本。
+
 ## v0.4.0-alpha.1 (2026-10-01) — Clear desktop workflow / 清晰桌面流程
 
 - Rx keeps its SCMD checker and SQL analysis; BatchScope is maintained in its own repository. Old release history is retained. / 更新独立项目边界，保留历史。

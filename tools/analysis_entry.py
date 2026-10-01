@@ -52,6 +52,11 @@ def self_test(source, diagnostic):
             info = json.loads((first / "manifest.json").read_text(encoding="utf-8"))
             assert info["row_count"] > 0
             assert str(app.report_button["state"]) == "normal"
+            original_input = app.csv.get()
+            app.csv.set(str(parent / "not-yet-analysed.csv"))
+            assert "Input changed" in app.status.get() and app.output == first
+            app.csv.set(original_input)
+            assert "Input changed" not in app.status.get()
             opened = []
             with patch("desktop.os.startfile", side_effect=lambda path: opened.append(Path(path))):
                 app.open_report("zh-CN")
@@ -79,7 +84,7 @@ def self_test(source, diagnostic):
                 "ok": True, "frozen": True, "rows": info["row_count"],
                 "checks": ["Tk startup", "background analysis", "SQL resources", "bilingual reports",
                            "report button paths", "artifact verification", "tamper detection",
-                           "failed-input recovery", "previous-run preservation"],
+                           "failed-input recovery", "previous-run preservation", "changed-input report context"],
                 "event_loop_ticks": ticks,
             }, indent=2), encoding="utf-8")
         return 0

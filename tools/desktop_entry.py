@@ -36,6 +36,13 @@ if __name__ == "__main__":
                 app.update()
                 time.sleep(.01)
             assert not app.busy and app.result.row_count == 8
+            app.deiconify()
+            app.geometry("900x600")
+            app.adjust_font(3)
+            for _ in range(4): app.update()
+            for button in [*app.filter_buttons.values(), app.search_button, app.clear_button]:
+                assert button.winfo_ismapped() and button.winfo_width() >= button.winfo_reqwidth()
+            app.withdraw()
             app.show_summary()
             app.update()
             with tempfile.TemporaryDirectory() as directory:

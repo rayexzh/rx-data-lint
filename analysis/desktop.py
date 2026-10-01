@@ -22,6 +22,8 @@ class AnalysisWindow:
         self.events = queue.Queue()
         self.busy = False
         self.output = None
+        self.completed_inputs = self.running_inputs = None
+        self.completed_text = ""
         self.language, self.theme, self.font_size = "zh", "light", 10
         configure_theme(root, self.theme, self.font_size)
         root.title("RxDataLint — SQL Analysis / 数据分析")
@@ -30,7 +32,6 @@ class AnalysisWindow:
         header = ttk.Frame(root, style="Header.TFrame", padding=22)
         header.pack(fill="x")
         controls = ttk.Frame(header, style="Header.TFrame")
-        controls.pack(side="right", anchor="n")
         self.language_button = ttk.Button(controls, command=self.toggle_language)
         self.language_button.pack(side="left", padx=4)
         self.theme_button = ttk.Button(controls, command=self.toggle_theme)
@@ -41,6 +42,8 @@ class AnalysisWindow:
         self.title.pack(anchor="w")
         self.subtitle = ttk.Label(header, style="Subtitle.TLabel")
         self.subtitle.pack(anchor="w", pady=6)
+        controls.pack(fill="x", pady=(4,0))
+        header.bind("<Configure>", lambda e: self.subtitle.configure(wraplength=max(200,e.width-44)))
         body = ttk.Frame(root)
         body.pack(fill="both", expand=True)
         self.canvas = tk.Canvas(body, highlightthickness=0)
@@ -51,7 +54,7 @@ class AnalysisWindow:
         frame = ttk.Frame(self.canvas, padding=22)
         item = self.canvas.create_window((0,0), window=frame, anchor="nw")
         self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfigure(item,width=e.width))
-        frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        frame.bind("<Configure>", self.resize_content)
         self.root.bind("<MouseWheel>", lambda e: self.canvas.yview_scroll(-1 if e.delta>0 else 1,"units"), add="+")
         self.workflow = ttk.Label(frame, style="Muted.TLabel")
         self.workflow.pack(fill="x", pady=(0,12))
@@ -71,7 +74,8 @@ class AnalysisWindow:
         self.run_button.pack(anchor="w", pady=14)
         self.progress = ttk.Progressbar(frame, mode="indeterminate")
         self.status = tk.StringVar(value="请选择文件并填写来源。 / Choose a CSV and enter its source.")
-        ttk.Label(frame, textvariable=self.status, wraplength=820).pack(anchor="w", pady=10)
+        self.status_label = ttk.Label(frame, textvariable=self.status, wraplength=820)
+        self.status_label.pack(anchor="w", pady=10)
         actions = ttk.Frame(frame);actions.pack(anchor="w")
         self.open_button = ttk.Button(actions, command=self.open_output, state="disabled")
         self.open_button.pack(side="left")
@@ -82,6 +86,8 @@ class AnalysisWindow:
         self.scope_label = ttk.Label(frame, style="Muted.TLabel", wraplength=820)
         self.scope_label.pack(fill="x", pady=16)
         self.apply_view()
+        for variable in (self.csv, self.source):
+            variable.trace_add("write", self.refresh_result_context)
         root.protocol("WM_DELETE_WINDOW", self.close)
         self.poll_id = root.after(150, self.poll)
         root.bind("<Destroy>", self.on_destroy, add="+")
@@ -104,6 +110,26 @@ class AnalysisWindow:
             widget.configure(text=text if en else zh)
         self.language_button.configure(text="中文" if en else "English")
         self.theme_button.configure(text=("Light" if self.theme == "dark" else "Dark") if en else ("浅色" if self.theme == "dark" else "深色"))
+        self.refresh_result_context()
+
+    def resize_content(self, event):
+        width = max(200, event.width-44)
+        for label in (self.workflow, self.status_label, self.scope_label, self.source_label):
+            label.configure(wraplength=width)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def refresh_result_context(self, *args):
+        if self.busy or not self.output or not self.completed_inputs:
+            return
+        source, provenance = self.completed_inputs
+        en = self.language == "en"
+        text = self.completed_text + ("\nReport input: " if en else "\n报告对应输入：") + source
+        text += ("\nSource: " if en else "\n来源：") + provenance
+        if (self.csv.get().strip(), self.source.get().strip()) != self.completed_inputs:
+            notice = ("Input changed — not analysed yet. Buttons below open the previous report."
+                      if en else "输入已变更，尚未重新分析。下方按钮打开的是上次报告。")
+            text = notice + "\n" + text
+        self.status.set(text)
 
     def toggle_language(self):
         self.language = "en" if self.language == "zh" else "zh"
@@ -147,6 +173,7 @@ class AnalysisWindow:
         if not parent:
             return
         self.busy = True
+        self.running_inputs = (self.csv.get().strip(), url)
         self.run_button.configure(state="disabled")
         self.open_button.configure(state="disabled")
         self.report_button.configure(state="disabled")
@@ -185,10 +212,13 @@ class AnalysisWindow:
             self.browse_button.configure(state="normal")
             self.run_button.configure(state="normal")
             self.output = output if ok else None
+            self.completed_inputs = self.running_inputs if ok else None
+            self.completed_text = text if ok else ""
             self.open_button.configure(state="normal" if ok else "disabled")
             self.report_button.configure(state="normal" if ok else "disabled")
             self.english_button.configure(state="normal" if ok else "disabled")
             self.status.set(text)
+            self.refresh_result_context()
         self.poll_id = self.root.after(150, self.poll)
 
     def open_output(self):

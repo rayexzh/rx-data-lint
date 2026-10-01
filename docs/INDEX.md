@@ -9,6 +9,7 @@
 | Show portfolio evidence / 求职展示 | [Portfolio](PORTFOLIO.md) · [中文](PORTFOLIO.zh-CN.md) |
 | Find BatchScope / 找到另一个项目 | [Project boundaries](PROJECT_BOUNDARIES.md) |
 | Contribute / 参与 | [Contributing](../CONTRIBUTING.md) · [Security](../SECURITY.md) |
+| Simulated review / 模拟试用 | [Observed findings and fixes](SIMULATED-USABILITY-REVIEW.md) |
 | Changes / 版本变化 | [Changelog](../CHANGELOG.md) |
 
 Runtime code is under `src/`; SCMD-specific SQL analysis is under `analysis/`; examples are under `examples/`. Local output, credentials, build tools and video intermediates are excluded from Git. BatchScope code lives in its own repository.

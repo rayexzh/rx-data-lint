@@ -1,8 +1,8 @@
 # RxDataLint
 
-**NHS medicines data review and local SQL analysis · v0.4.0-alpha.1**
+**NHS medicines data review and local SQL analysis · v0.4.0-alpha.2**
 
-[简体中文](README.zh-CN.md) · [Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.1) · [Animated walkthrough](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [Documentation](docs/INDEX.md)
+[简体中文](README.zh-CN.md) · [Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.2) · [Animated walkthrough](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [Documentation](docs/INDEX.md)
 
 RxDataLint helps you review SCMD CSV data before interpreting medicines totals. One repository contains two steps of the same workflow:
 
@@ -158,3 +158,5 @@ See the bilingual [change log](CHANGELOG.md) for changes and verification.
 Open **Finding overview** for whole-file rule summaries and double-click a rule to review it. Details show medicine, organisation and month. **Export filtered findings** saves only matching findings with context and an explicit scope; **Export full report** retains all results.
 
 See the bilingual [two-minute walkthrough](docs/QUICKSTART.md) for portable Windows instructions and building from source. Get the unsigned portable ZIP from [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2).
+
+[Scripted usability review / 模拟试用与修复](docs/SIMULATED-USABILITY-REVIEW.md)

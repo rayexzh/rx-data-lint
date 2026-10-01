@@ -10,6 +10,21 @@ PALETTES = {
     "dark": {"background":"#15251f", "surface":"#20372d", "text":"#e8f3ed", "muted":"#b4cbc0", "header":"#10291f", "border":"#527562", "accent":"#166b54", "selection":"#237358", "entry":"#20372d", "error_bg":"#472728", "error_fg":"#ffd0cf", "warning_bg":"#433720", "warning_fg":"#ffe1a3", "info_bg":"#233b4e", "info_fg":"#c3e4ff", "passed_bg":"#214b36", "passed_fg":"#c8efda"},
 }
 
+def layout_flow(frame, widgets, width=None):
+    """Wrap complete controls; never shrink a button until its label disappears."""
+    available = max(1, frame.winfo_width() if width is None else width)
+    for widget in widgets:
+        if widget.winfo_manager() == "pack":
+            widget.pack_forget()
+    row = column = used = 0
+    for widget in widgets:
+        required = widget.winfo_reqwidth() + 8
+        if column and used + required > available:
+            row, column, used = row + 1, 0, 0
+        widget.grid(row=row, column=column, sticky="w", padx=(0,8), pady=(0,6))
+        column += 1
+        used += required
+
 def enable_dpi_awareness():
     if sys.platform == "win32":
         try:
