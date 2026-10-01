@@ -1,167 +1,75 @@
 # RxDataLint
 
-**NHS 药品数据复核与本地 SQL 分析 · v0.4.0-alpha.2**
+检查 NHS 药品 CSV，查看需要复核的记录，再生成本地 SQL 汇总。
 
-[English](README.md) · [Windows 下载](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.2) · [动画操作视频](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [文档导航](docs/INDEX.md)
+Check NHS medicines CSVs, inspect flagged records, and build local SQL summaries. [Full English README](README.md)
 
-RxDataLint 帮助你在解读 SCMD 药品统计之前复核 CSV 数据。一个项目包含同一流程的两个入口：
+[下载 Windows 版](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.2) · [文档目录](docs/INDEX.md) · [操作视频](docs/DEMO_VIDEO.md)
 
-| 桌面入口 | 用途 |
-|---|---|
-| **Start-Checker.bat** | 查看提示、检查覆盖和原始记录，导出完整或筛选结果。 |
-| **Start-Analysis.bat** | 生成 SQLite/SQL 汇总及已核对的中英文离线报告。 |
+**当前版本：v0.4.0-alpha.2。** 在本机运行，不需要付费 API。
 
-**第一次使用：**下载 Windows ZIP，完整解压，打开 **Start-Checker.bat**，点击 **打开示例**。无需安装 Python，也无需付费 API。需要 SQL 分析时，打开 **Start-Analysis.bat**，选择 **使用示例**，再点击 **生成并校验**。
+## 解决什么问题
 
-[视频讲稿与制作说明](docs/DEMO_VIDEO.md) · [启动指南](docs/QUICKSTART.md) · [公开数据案例](analysis/CASE_STUDY.md) · [作品集证据](docs/PORTFOLIO.zh-CN.md)
+RxDataLint 面向 NHSBSA 发布的医院药品数据（SCMD）。在做统计或导入 Power BI 前，先检查 CSV 中有哪些记录值得复核。
 
-![RxDataLint 桌面复核](docs/screenshots/checker-en.png)
+例如，负数量可能来自库存调整，空白费用不能直接当作零，重复记录也可能影响汇总。软件会列出检查规则、对应单元格和原始记录，方便你查清楚后再分析。
 
-**独立项目：**BatchScope 使用自己的[仓库](https://github.com/rayexzh/batchscope)、版本和下载。模拟批次、偏差与措施功能不包含在 RxDataLint 中。[项目边界](docs/PROJECT_BOUNDARIES.md) 解释两者的区别。
+适合使用 SCMD 的分析人员，也可用于学习药品数据分析。它目前不是通用的医药数据检查器。
 
-[![Tests](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml/badge.svg)](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml)
+![桌面检查工具](docs/screenshots/checker-en.png)
 
-RxDataLint 是一个本地运行的开源药品数据质量检查工具。第一版面向英国
-NHSBSA 发布的 Secondary Care Medicines Data（SCMD），帮助用户在趋势分析、
-机构比较或导入 Power BI 之前发现潜在的数据问题。
+## 两个入口，分别做什么
 
-程序不会把数据上传到服务器。它可以导出标准化 CSV、JSON 检查结果和独立
-HTML 报告。
+| 工具 | 操作 | 输出 |
+|---|---|---|
+| **数据检查** | 打开 SCMD CSV，搜索检查结果，查看对应原始记录。 | 检查说明、覆盖情况，以及完整报告或当前筛选范围的报告。 |
+| **SQL 分析** | 选择 CSV，生成一次新的分析快照。 | SQLite 数据库、五张 CSV 汇总表、中英文离线 HTML 报告。 |
 
-本项目仍处于 Alpha 阶段，与 NHS、NHSBSA 和 OpenPrescribing 没有关联。
-“未发现问题”不代表数据在临床、财务或监管意义上一定正确。
+检查项包括必需字段、日期、编码、数值格式、疑似重复记录、负值和极端数量。缺失月份检查用于合并后的多月数据。搜索针对检查结果及其关联记录，不是搜索文件中的所有药品。
 
-## 为什么开发这个项目
+SQL 汇总回答：每月包含多少记录、哪些产品的已知指示性费用较高、各机构包含哪些数据、哪些规则触发较多，以及排除负费用后总额会怎样变化。空白或无效费用不会被填成零，不同产品或单位的数量也不会混加。
 
-公开药品数据很有价值，但也很容易被错误解读。字段结构变化、负数库存调整、
-缺失提交、重复记录和极端数值，都可能改变趋势和机构比较的结论。
+## 先试一次
 
-RxDataLint 希望在“下载原始数据”和“制作分析结果”之间增加一个透明、可解释的
-质量检查步骤。项目结合药品质量管理思维、Python 数据处理和商业分析流程，目标
-用户包括医药数据分析人员、教师、学生以及希望学习英国医药数据的人。
+1. 下载 Windows ZIP，**完整解压整个文件夹**。
+2. 打开 **Start-Checker.bat**，点击 **Try sample／试用示例**。
+3. 选中一条检查结果，查看原始记录，再选择导出完整报告或当前筛选报告。
+4. 打开 **Start-Analysis.bat**，点击 **Use sample／使用示例**，然后 **Generate and verify／生成并验证**。
+5. 打开生成的报告，或查看 CSV 汇总表。
 
-## 当前功能
+故意设置了问题的示例包含 **8 条记录、4 条受影响记录、6 个错误、9 个警告**。一条记录可能触发多个检查项。这是功能演示，不代表 NHS 数据的整体质量。
 
-- 支持 NHSBSA 当前 SCMD 字段结构；
-- 兼容部分 2026 年 6 月前的旧字段名；
-- 检查月份、ODS Code、SNOMED Code、药品名称和数值字段；
-- 标记负数药品数量和负数指示成本；
-- 发现疑似重复的“月份—Trust—药品”记录；
-- 检查合并数据中 Trust 缺失的月份；
-- 通过透明的 20 倍中位数规则标记极端用量；
-- 提供中英文桌面界面；
-- 导出规范化 CSV（不自动修正异常）、JSON 和 HTML 报告；
-- 所有数据处理均在用户电脑本地完成。
+使用真实公开文件时，可参考[公开数据案例](analysis/CASE_STUDY.md)，核对来源和临时发布状态。更换输入后需要重新运行，已完成的报告不会自动更新。
+
+## 结果怎么理解
+
+检查项是复核线索，不等于原始数据一定错误。负值可能合理；极端数量使用基于中位数的阈值，不是临床风险预测。字段标准化也不会自动修复异常记录。
+
+指示性费用不是实际采购支出、销售额或节省金额。没有触发检查项，不代表临床正确或合规认证。大文件在内存中处理；参考编码验证及部分跨发布版本对比尚未实现。详细口径见[检查规则](docs/RULES.md)和 [SQL 指标说明](analysis/README.zh-CN.md)。
+
+项目与 NHS、NHSBSA 无隶属关系。公开数据保留其原有许可；软件采用 [MIT 许可证](LICENSE)。
 
 ## 从源码运行
 
-需要 Python 3.10 或更高版本，不需要安装第三方运行库。最简单的方法是双击：
-
-```text
-run_desktop.bat
-```
-
-在 PyCharm 中，可以打开整个项目文件夹，然后运行项目根目录的 `app.py`。
-
-也可以在 PowerShell 中运行：
+需要 Python 3.10 或以上版本。桌面工具使用 Python 标准库。
 
 ```powershell
-python -m pip install -e .
-rx-data-lint-gui
+python app.py
+python analysis/desktop.py
 ```
 
-## 测试示例
-
-启动程序后选择：
-
-```text
-examples/sample_scmd.csv
-```
-
-这份合成数据故意包含负数、重复记录、错误日期、错误代码、缺失月份和极端数量，
-用于确认检查规则能够正常工作。示例不包含患者数据。
-
-## 命令行使用
+命令行用法：
 
 ```powershell
 python -m pip install -e .
 rx-data-lint examples/sample_scmd.csv --output outputs/demo
 ```
 
-每次导出会在所选目录内新建独立的 `run-*` 子文件夹，程序会显示实际文件路径，旧报告保留。表头缺失或列名冲突时只生成 HTML/JSON 报告，不生成规范化 CSV。命令行退出码：`0` 表示检查完成且无错误（仍可能有警告）；`1` 表示有错误、检查不完整或没有数据；`2` 表示读取、编码、解析或写入失败。
+## 更多资料
 
-当报告包含 error 时，命令以状态码 1 退出，因此未来可以接入自动化数据流程。
+- [启动与 Windows 打包说明](docs/WINDOWS-SUITE.md)
+- [SQL 查询、输出文件与 Power BI 导入](analysis/README.zh-CN.md)
+- [更新记录](CHANGELOG.md)、[贡献说明](CONTRIBUTING.md)、[安全说明](SECURITY.md)
+- [脚本化试用记录](docs/SIMULATED-USABILITY-REVIEW.md)：自动化检查，并非外部用户反馈。
 
-## 自动化测试
-
-```powershell
-$env:PYTHONPATH = "src"
-python -m unittest discover -s tests -v
-```
-
-GitHub Actions 会在多个 Python 版本上自动运行测试。
-
-## 当前限制
-
-- 检查结果属于筛查提示，不代表原始数据一定错误；
-- 质量分仍是实验性指标，不属于临床、财务或监管结论；
-- 多月份大型文件目前会在内存中处理，可能需要等待；
-- dm+d 参考数据验证尚未实现；
-- 暂定数据与最终数据的自动回溯比较尚未实现。
-
-## 后续方向
-
-- 比较 provisional 与 finalised SCMD；
-- 自动识别新的字段结构变化；
-- 检查产品级提交异常；
-- 加入 dm+d 参考数据验证；
-- 提高大型 CSV 的处理速度；
-- 导出适合 Power BI 的星型数据模型；
-- 根据真实用户反馈增加规则。
-
-## 数据来源
-
-SCMD 由 NHS Business Services Authority 发布，并使用英国 Open Government
-Licence。使用数据前应阅读官方说明，尤其要注意暂定数据、负数库存调整以及
-indicative cost 不等于医院实际采购净成本。
-
-官方数据页面：
-
-https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-price
-
-## 参与贡献
-
-欢迎提交错误报告、公开或合成的数据示例、验证规则建议、中文或英文文档改进，
-以及大型数据文件的性能优化。请勿在公开 issue 中上传患者数据、医院内部数据或
-商业敏感数据。
-
-详细要求参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 许可证
-
-MIT
-
-## 开发进度
-
-参见 [v0.2 改进清单](docs/V0.2-PLAN.zh-CN.md) 与 [规则及适用边界](docs/RULES.md)。报告已增加输入文件 SHA-256、字节数、检查时间、版本和受影响记录数；这些信息用于复查，不代表合规认证。当前仍在内存中处理数据。
-
-
-## 问题搜索与费用完整性
-
-先按分类筛选，再输入药品名称、机构编码、规则、字段或数值，点击搜索或回车。多个空格分隔的关键词须全部匹配，不区分英文大小写，采用包含匹配。搜索针对问题及关联记录，不是全部药品记录；清除仅取消搜索，完整报告导出始终包含全部结果。空费用单独提示为警告并保持空白，不补零；界面和报告展示按记录计算的费用缺失比例。
-
-
-## 大文件处理与界面响应
-
-桌面版在后台检查 CSV 和导出报告，期间显示动态活动条（不是完成百分比），并暂停重复导入、搜索和导出操作。大量提示分批显示，筛选后完整报告导出仍包含全部检查结果。处理失败会保留上一次成功检查的结果。请等待导出成功提示后再关闭程序；处理中退出可能留下不完整的报告文件夹。
-
-本次改动与验证记录见中英文[更新日志](CHANGELOG.md)。
-
-
-## 复核流程与 Windows 运行包
-
-点击“问题概览”查看全文件规则汇总，双击规则查看问题。详情展示药品、机构和月份。“导出当前筛选的问题”仅保存匹配提示及其范围；“导出完整报告”保留全部结果。
-
-使用方法与从源码打包步骤见双语[两分钟上手](docs/QUICKSTART.md)。从 [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2) 下载未签名的便携 ZIP 预发布版。
-
-[Scripted usability review / 模拟试用与修复](docs/SIMULATED-USABILITY-REVIEW.md)
+操作视频展示较早版本的界面，制作方式见视频说明。[BatchScope](https://github.com/rayexzh/batchscope) 是另一个独立项目，处理模拟生产质量记录，有自己的下载和版本。

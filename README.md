@@ -1,162 +1,75 @@
 # RxDataLint
 
-**NHS medicines data review and local SQL analysis · v0.4.0-alpha.2**
+Check NHS medicines CSVs, inspect flagged records, and build local SQL summaries.
 
-[简体中文](README.zh-CN.md) · [Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.2) · [Animated walkthrough](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [Documentation](docs/INDEX.md)
+检查 NHS 药品 CSV，查看需要复核的记录，再生成本地 SQL 汇总。[完整中文说明](README.zh-CN.md)
 
-RxDataLint helps you review SCMD CSV data before interpreting medicines totals. One repository contains two steps of the same workflow:
+[Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.2) · [Documentation](docs/INDEX.md) · [Walkthrough](docs/DEMO_VIDEO.md)
 
-| Desktop entry | Purpose |
-|---|---|
-| **Start-Checker.bat** | Review CSV findings, coverage and source records; export full or filtered evidence. |
-| **Start-Analysis.bat** | Build SQLite/SQL summaries and verified offline Chinese/English reports. |
+**Current version: v0.4.0-alpha.2.** Runs locally; no paid API is needed.
 
-**Quick start:** download the Windows ZIP, extract it completely, open **Start-Checker.bat**, and click **Try sample**. No Python installation or paid API is needed. For SQL output, open **Start-Analysis.bat**, select **Use sample**, then **Generate and verify**.
+## What it is for
 
-[English video script and production disclosure](docs/DEMO_VIDEO.md) · [Startup guide](docs/QUICKSTART.md) · [Worked public-data case](analysis/CASE_STUDY.md) · [Portfolio evidence](docs/PORTFOLIO.md)
+RxDataLint works with NHSBSA Secondary Care Medicines Data (SCMD). It adds a review step before you use a downloaded CSV for analysis or Power BI reporting.
 
-![RxDataLint desktop review](docs/screenshots/checker-en.png)
+A negative quantity may be a stock adjustment. A blank cost is not zero. Repeated records can affect totals. The checker points you to the relevant cells and source rows, so you can investigate before interpreting a summary.
 
-**Independent project:** BatchScope has its own [repository](https://github.com/rayexzh/batchscope), versions and downloads. Its synthetic batch/deviation/action workflow is not included in RxDataLint. See [project boundaries](docs/PROJECT_BOUNDARIES.md).
+It is intended for analysts working with SCMD and learners practising medicines-data analysis. It does not accept every kind of pharmaceutical dataset.
 
-[![Tests](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml/badge.svg)](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml)
+![Desktop checker](docs/screenshots/checker-en.png)
 
-RxDataLint is a local-first data quality workbench for NHS medicines datasets.
-The first adapter checks NHSBSA Secondary Care Medicines Data (SCMD) CSV files
-before they are used for trend analysis, benchmarking, or Power BI reporting.
+## Two tools, one workflow
 
-This repository is an early, testable prototype. It is not affiliated with the
-NHS, NHSBSA, or OpenPrescribing, and a clean report is not proof that data is
-clinically or financially correct.
+| Tool | What you do | What you get |
+|---|---|---|
+| **Checker** | Open a SCMD CSV; review findings, search them, and inspect linked source records. | Rule explanations, coverage information, and full or filtered reports. |
+| **SQL analysis** | Select the CSV and generate a new analysis snapshot. | A SQLite database, five CSV summaries, and offline English and Chinese HTML reports. |
 
-## Why this project exists
+Checks cover required columns, dates, identifiers, numeric values, candidate duplicate keys, negative values, and extreme quantities. Missing-month checks apply to combined multi-month data. Search filters findings and their linked records; it is not a search engine for every medicine in the file.
 
-Public medicines data can be highly useful and still be easy to misread. Schema
-changes, negative stock adjustments, missing submissions, duplicate rows, and
-extreme values can materially change a trend or benchmark. RxDataLint adds an
-explainable review step between an NHSBSA download and downstream analysis.
+SQL summaries show monthly record counts, product costs, organisation coverage, findings by rule, and the effect of excluding negative costs. Missing and invalid costs remain distinct from zero. Quantities with different products or units are not added together.
 
-The project combines pharmaceutical quality thinking with practical Python and
-data-analysis workflows. It aims to help analysts, educators, and learners find
-potential problems early without uploading their data to a third-party service.
+## Try it in a few minutes
 
-> **Alpha software:** use only public, synthetic, or appropriately governed
-> data. Validate findings against the source documentation before acting on
-> them.
+1. Download the Windows ZIP and **extract the whole folder**.
+2. Open **Start-Checker.bat**, then choose **Try sample**.
+3. Select a finding and inspect its source record. Choose a full report or a report of the current filtered view.
+4. Open **Start-Analysis.bat**, choose **Use sample**, then **Generate and verify**.
+5. Open the generated report or inspect the CSV summaries.
 
-## What the prototype checks
+The deliberately faulty sample has **8 records, 4 affected records, 6 errors and 9 warnings**. Several findings can refer to one record. This example checks that the review workflow works; it does not measure the quality of NHS data.
 
-- the current NHSBSA SCMD schema and selected pre-June-2026 column aliases;
-- invalid months, ODS codes, SNOMED codes, names, and numeric values (including
-  both `YYYY-MM` documented dates and `YYYYMM` values returned by the API);
-- negative quantities and indicative costs;
-- possible duplicate month/trust/product records;
-- missing months by Trust in combined files; and
-- extreme product quantities using a transparent 20x-median review rule.
+For a real file, use the [public-data case study](analysis/CASE_STUDY.md) and check its source and provisional status. Changing the input does not update a completed report: run the analysis again.
 
-It exports a canonical CSV plus JSON and standalone HTML quality reports. All
-processing stays on the user's computer.
+## What the results mean
 
-The desktop interface starts in Chinese and includes an English switch, light/dark themes, adjustable fonts and a one-click synthetic sample. Findings are colour coded, the table scrolls horizontally, and selecting
-a finding shows its complete value and guidance below the table.
+A finding is a prompt to review, not proof that the source is wrong. Negative values can be legitimate adjustments. The extreme-quantity rule uses a transparent median-based threshold, not a clinical risk model. Normalising columns does not repair flagged records.
+
+Indicative costs are not actual purchasing expenditure, sales or savings. A clean report does not certify clinical accuracy or regulatory compliance. Large files are processed in memory. Reference-code validation and some cross-release comparisons remain outside the current scope. See the [rules](docs/RULES.md) and [SQL metric definitions](analysis/README.md).
+
+RxDataLint is independent of the NHS and NHSBSA. Public data retains its source licence; the software is [MIT licensed](LICENSE).
 
 ## Run from source
 
-Python 3.10 or later is required. No third-party runtime dependency is needed.
-On Windows, double-click `run_desktop.bat` to launch the program without an
-installation step.
-
-In PyCharm, open the repository folder and run the root-level `app.py` file.
-
-Alternatively, install the commands locally:
+Python 3.10+ is required. The desktop tools use the standard library.
 
 ```powershell
-python -m pip install -e .
-rx-data-lint-gui
+python app.py
+python analysis/desktop.py
 ```
 
-Choose `examples/sample_scmd.csv` to see the prototype identify deliberate
-quality problems.
-
-## Run from the command line
+For command-line use:
 
 ```powershell
 python -m pip install -e .
 rx-data-lint examples/sample_scmd.csv --output outputs/demo
 ```
 
-Each export is saved in a new `run-*` subfolder of your chosen output directory; the application shows the actual file paths. Previous reports are preserved. Header conflicts or missing headers produce HTML/JSON reports without a normalized CSV. CLI exit codes are `0` for completed checks without errors (warnings may exist), `1` for errors or incomplete/no-data assessments, and `2` for input/output failures.
+## Further reading
 
-The command exits with status 1 when errors are present, so it can later be
-used in automated data pipelines.
+- [Startup and Windows packaging](docs/WINDOWS-SUITE.md)
+- [SQL queries, outputs and Power BI handoff](analysis/README.md)
+- [Changes](CHANGELOG.md), [contributing](CONTRIBUTING.md) and [security](SECURITY.md)
+- [Scripted usability review](docs/SIMULATED-USABILITY-REVIEW.md) — automated checks, not external user feedback.
 
-Run the dependency-free test suite with:
-
-```powershell
-$env:PYTHONPATH = "src"
-python -m unittest discover -s tests -v
-```
-
-## Project direction
-
-The next release should be driven by user interviews and real SCMD files. The
-initial product hypothesis is that analysts need a portable, explainable check
-between raw NHSBSA downloads and analysis tools. Candidate additions include
-provisional-versus-final comparisons, schema-change detection, product-level
-submission anomalies, dm+d validation, and Power BI star-schema export.
-
-## Current limitations
-
-- Rules are screening checks and do not establish that a value is incorrect.
-- The score is experimental and is not a clinical, financial, or regulatory
-  assessment.
-- Large multi-month files are currently processed in memory and may take time.
-- dm+d reference validation and provisional-versus-final comparison are not yet
-  implemented.
-
-## Data source
-
-SCMD is published by the NHS Business Services Authority under the Open
-Government Licence. Refer to the official dataset documentation before drawing
-conclusions, especially the caveats around provisional submissions, negative
-stock adjustments, and indicative rather than net acquisition costs:
-
-https://opendata.nhsbsa.net/dataset/secondary-care-medicines-data-indicative-price
-
-## Contributing
-
-Bug reports, anonymised examples, proposed validation rules, and documentation
-improvements are welcome. Each validation rule should explain what it detects,
-why the finding matters, and when a flagged value may still be valid.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and data
-handling rules.
-
-## Licence
-
-MIT
-
-## Development progress
-
-See [rule boundaries](docs/RULES.md) and the [v0.2 checklist](docs/V0.2-PLAN.zh-CN.md). Reports now include input SHA-256, byte size, check time, version metadata and distinct affected-record counts. These identify the checked input; they are not a compliance certificate. Processing remains in memory.
-
-
-## Finding search and cost completeness
-
-Use category buttons to filter findings, then enter a medicine name, organisation code, rule, field or value and press Search/Enter. Space-separated terms must all match (case-insensitive substrings). Search covers findings and their associated records, not every medicine record. Clear removes the search; full-report exports always contain the full result. Blank indicative costs are warnings, preserved as missing rather than zero. The desktop and reports show missing-cost coverage by record count.
-
-
-## Desktop responsiveness
-
-The desktop app validates CSV files and exports reports in a background worker, with an animated activity indicator (not a completion percentage). Duplicate imports, search, and export controls are paused while a task runs. Findings are rendered in batches; full-report exports always include the complete result regardless of filters. Failed loads preserve the last successful result. Wait for export confirmation before closing the app: exiting during export may leave an incomplete report folder.
-
-See the bilingual [change log](CHANGELOG.md) for changes and verification.
-
-
-## Review workflow and Windows package
-
-Open **Finding overview** for whole-file rule summaries and double-click a rule to review it. Details show medicine, organisation and month. **Export filtered findings** saves only matching findings with context and an explicit scope; **Export full report** retains all results.
-
-See the bilingual [two-minute walkthrough](docs/QUICKSTART.md) for portable Windows instructions and building from source. Get the unsigned portable ZIP from [GitHub Releases](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2).
-
-[Scripted usability review / 模拟试用与修复](docs/SIMULATED-USABILITY-REVIEW.md)
+The walkthrough shows an earlier interface; its recording method is documented in the video guide. [BatchScope](https://github.com/rayexzh/batchscope) is a separate project for synthetic manufacturing-quality records, with its own downloads and versions.
