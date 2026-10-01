@@ -1,0 +1,121 @@
+1
+00:00:00,250 --> 00:00:08,498
+RxDataLint adds a review step before turning medicines data into a chart. This
+walkthrough uses the bundled synthetic example, not patient or
+
+2
+00:00:08,498 --> 00:00:13,747
+company records. Open a CSV, understand the findings, and export evidence before
+analysing totals.
+
+3
+00:00:14,950 --> 00:00:23,609
+Extract the Windows ZIP and open Start Checker. Click Try sample to load eight
+fictional records. For public SCMD data, use Choose CSV.
+
+4
+00:00:23,609 --> 00:00:28,127
+Processing stays on your computer, and the desktop remains responsive during
+checks.
+
+5
+00:00:29,330 --> 00:00:37,199
+The sample produces six errors and nine warnings, but only four affected records.
+One row can trigger several rules, so fifteen findings do not
+
+6
+00:00:37,199 --> 00:00:41,462
+mean fifteen bad rows. These counts are not a regulatory or clinical verdict.
+
+7
+00:00:42,660 --> 00:00:50,578
+Choose Negative to focus on quantities and costs below zero. A stock adjustment
+can legitimately be negative. Source values stay intact: the
+
+8
+00:00:50,578 --> 00:00:56,337
+program does not delete them, turn them positive, or decide they are wrong. Review
+their context.
+
+9
+00:00:57,540 --> 00:01:05,296
+Select a finding and double click, or press Enter, to reach its full explanation.
+Details link the finding to its medicine, organisation, month
+
+10
+00:01:05,296 --> 00:01:10,692
+and original value. You have a specific record to investigate, instead of a vague
+dashboard number.
+
+11
+00:01:11,890 --> 00:01:20,113
+Check coverage shows which rules ran, which were skipped, and why. Executed does
+not mean passed. No findings does not mean every possible
+
+12
+00:01:20,113 --> 00:01:23,688
+quality issue was tested. Read the coverage and guidance together.
+
+13
+00:01:24,890 --> 00:01:32,858
+Search an organisation, medicine, month, or rule while using a category filter.
+Here, R two B leaves six negative findings. Category totals
+
+14
+00:01:32,858 --> 00:01:39,377
+describe the unsearched file; the visible count describes your current view. Clear
+the search to widen your review.
+
+15
+00:01:40,580 --> 00:01:49,377
+Export full report keeps all findings even when the screen is filtered. It creates
+HTML, JSON evidence, and a normalized CSV when the schema
+
+16
+00:01:49,377 --> 00:01:55,241
+permits. Export filtered findings creates a smaller follow up list. Normalization
+does not correct flagged records.
+
+17
+00:01:56,440 --> 00:02:04,938
+Open Start Analysis for SQL summaries. Use the sample with source synthetic, or
+provide the official URL for public data. Generate and verify
+
+18
+00:02:04,938 --> 00:02:09,372
+builds SQLite summaries and bilingual offline reports, then checks the exported
+files.
+
+19
+00:02:10,570 --> 00:02:19,004
+Blank costs stay unknown; malformed costs are separate problems. The missing cost
+card counts blanks only, so zero percent missing does not mean
+
+20
+00:02:19,004 --> 00:02:24,137
+every cost is valid. Excluding negatives changes totals. That difference is not a
+saving.
+
+21
+00:02:25,340 --> 00:02:33,899
+Switch language, choose a theme, and adjust font size. These controls change
+presentation, not data or findings. Scroll on smaller screens and
+
+22
+00:02:33,899 --> 00:02:38,957
+open details for long fields. The analysis launcher has the same display controls.
+
+23
+00:02:40,160 --> 00:02:48,064
+RxDataLint reviews medicines data. BatchScope is a separate synthetic
+manufacturing quality project, with its own repository and Windows release.
+
+24
+00:02:48,064 --> 00:02:56,385
+Both are educational alpha tools. This demo combines real application captures,
+explanatory animation, and a synthetic English voice. Start with
+
+25
+00:02:56,385 --> 00:02:58,881
+the example and review the evidence.
+

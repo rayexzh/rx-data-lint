@@ -7,10 +7,12 @@ from queue import Empty, Queue
 from threading import Thread
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
+import tkinter.font as tkfont
 
 from .reports import write_outputs
 from .review import record_for, summarise, write_filtered_findings
 from .validator import Issue, validate_csv
+from .presentation import configure_theme, enable_dpi_awareness, sample_path
 
 
 TEXT = {
@@ -26,7 +28,7 @@ TEXT = {
         "rows": "检查行数",
         "errors": "错误",
         "warnings": "警告",
-        "missing_cost": "费用缺失（记录占比）",
+        "missing_cost": "费用缺失占比",
         "passed": "已执行的检查未发现问题，请查看检查覆盖情况",
         "review": "发现需要检查的问题",
         "severity": "级别",
@@ -49,7 +51,7 @@ TEXT = {
         "info": "提示",
         "guidance": "处理建议",
         "value": "原始值",
-        "score_note": "受影响记录数按记录去重。请结合检查覆盖情况阅读结果；已执行不等于通过，规范化导出不会自动修正异常。",
+        "score_note": "双击问题或按 Enter 查看完整详情。费用缺失占比只统计空白；非数值费用另列错误。受影响记录数按记录去重。请结合检查覆盖情况阅读结果；已执行不等于通过，规范化导出不会自动修正异常。",
     },
     "en": {
         "title": "RxDataLint",
@@ -63,7 +65,7 @@ TEXT = {
         "rows": "Rows checked",
         "errors": "Errors",
         "warnings": "Warnings",
-        "missing_cost": "Missing cost (% of records)",
+        "missing_cost": "Missing cost records",
         "passed": "No findings in executed checks; review coverage",
         "review": "Findings need review",
         "severity": "Severity",
@@ -86,15 +88,18 @@ TEXT = {
         "info": "Information",
         "guidance": "Guidance",
         "value": "Source value",
-        "score_note": "Affected records are counted once. Review check coverage: executed does not mean passed, and normalized exports do not correct findings.",
+        "score_note": "Double-click a finding or press Enter for full details. Missing cost counts blanks; nonnumeric costs are separate errors. Affected records are counted once. Review check coverage: executed does not mean passed, and normalized exports do not correct findings.",
     },
 }
 
 
 class App(tk.Tk):
     def __init__(self) -> None:
+        enable_dpi_awareness()
         super().__init__()
         self.language = "zh"
+        self.theme = "light"
+        self.font_size = 10
         self.search_query = ""
         self.active_filter = "all"
         self.result = None
@@ -104,9 +109,9 @@ class App(tk.Tk):
         self.source_path: Path | None = None
         self.issue_by_item: dict[str, Issue] = {}
         self.title("RxDataLint — NHS medicines data quality")
-        self.geometry("1180x850")
-        self.minsize(900, 800)
-        self.configure(background="#f3f7f5")
+        self.geometry(f"1180x{min(900, self.winfo_screenheight()-100)}")
+        self.minsize(900, 600)
+        self.configure(background="#eef5f2")
         self._configure_styles()
         self._build()
         self._refresh_text()
@@ -116,52 +121,104 @@ class App(tk.Tk):
         return TEXT[self.language]
 
     def _configure_styles(self) -> None:
-        style = ttk.Style(self)
-        style.theme_use("clam")
-        style.configure("App.TFrame", background="#f3f7f5")
-        style.configure("Header.TFrame", background="#123c32")
-        style.configure("Title.TLabel", background="#123c32", foreground="white", font=("Microsoft YaHei UI", 23, "bold"))
-        style.configure("Subtitle.TLabel", background="#123c32", foreground="#d8ebe5", font=("Microsoft YaHei UI", 10))
-        style.configure("Primary.TButton", font=("Microsoft YaHei UI", 10, "bold"), padding=(14, 8))
-        style.configure("Toolbar.TButton", font=("Microsoft YaHei UI", 9), padding=(11, 7))
-        style.configure("MetricCard.TFrame", background="white", relief="solid", borderwidth=1)
-        style.configure("Metric.TLabel", background="white", foreground="#17372f", font=("Microsoft YaHei UI", 19, "bold"))
-        style.configure("MetricName.TLabel", background="white", foreground="#64756f", font=("Microsoft YaHei UI", 9))
-        style.configure("Passed.TLabel", background="#dff5e8", foreground="#14633c", font=("Microsoft YaHei UI", 11, "bold"), padding=10)
-        style.configure("Review.TLabel", background="#fff0dc", foreground="#8a4b08", font=("Microsoft YaHei UI", 11, "bold"), padding=10)
-        style.configure("Treeview", rowheight=29, font=("Microsoft YaHei UI", 9), background="white", fieldbackground="white")
-        style.configure("Treeview.Heading", font=("Microsoft YaHei UI", 9, "bold"), background="#dce9e4", foreground="#17372f")
+        self.colors = configure_theme(self, self.theme, self.font_size)
+
+    def toggle_theme(self):
+        self.theme = "dark" if self.theme == "light" else "light"
+        self.apply_presentation()
+
+    def adjust_font(self, delta):
+        self.font_size = min(14, max(10, self.font_size + delta))
+        self.apply_presentation()
+
+    def apply_presentation(self):
+        self._configure_styles()
+        self.canvas.configure(background=self.colors["background"])
+        self.details.configure(background=self.colors["surface"], foreground=self.colors["text"], insertbackground=self.colors["text"], font="TkTextFont")
+        for key in ("error", "warning", "info", "passed"):
+            self.tree.tag_configure(key, background=self.colors[key+"_bg"], foreground=self.colors[key+"_fg"])
+        self.theme_button.configure(text=("浅色" if self.theme == "dark" else "深色") if self.language == "zh" else ("Light" if self.theme == "dark" else "Dark"))
+        self._wrap_content()
+
+    def _wrap_content(self, event=None):
+        width = max(850, self.canvas.winfo_width()-28)
+        for label in (self.workflow, self.filter_note, self.file_label):
+            label.configure(wraplength=width)
+        label_font = tkfont.nametofont("TkDefaultFont", self)
+        required = max(200, max(label_font.measure(name.cget("text")) for _, name in self.metric_widgets.values()) + 48)
+        columns = min(5, max(2, width // required))
+        for i in range(5):
+            self.metrics_frame.columnconfigure(i, weight=1 if i < columns else 0, uniform="metrics" if i < columns else "")
+        for i,card in enumerate(self.metric_cards):
+            card.grid(row=i//columns, column=i%columns, sticky="nsew", padx=(0,8), pady=(0,8))
+        self.subtitle_label.configure(wraplength=max(450,width-350))
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def focus_details(self, event=None):
+        self.show_selected_issue()
+        self.update_idletasks()
+        height = max(1, self.content.winfo_height())
+        self.canvas.yview_moveto(max(0, (self.details_frame.winfo_y()-20)/height))
+
+    def _scroll_page(self, event):
+        if not isinstance(event.widget, (ttk.Treeview, tk.Text)) and event.delta:
+            self.canvas.yview_scroll(-1 if event.delta > 0 else 1, "units")
+            return "break"
 
     def _build(self) -> None:
         header = ttk.Frame(self, style="Header.TFrame", padding=(26, 12))
         header.pack(fill="x")
+        view_controls = ttk.Frame(header, style="Header.TFrame")
+        view_controls.pack(side="right", anchor="n")
+        self.language_button = ttk.Button(view_controls, command=self.toggle_language)
+        self.language_button.pack(side="left", padx=4)
+        self.theme_button = ttk.Button(view_controls, command=self.toggle_theme)
+        self.theme_button.pack(side="left", padx=4)
+        self.font_minus = ttk.Button(view_controls, text="A−", command=lambda: self.adjust_font(-1), width=3)
+        self.font_minus.pack(side="left", padx=2)
+        self.font_plus = ttk.Button(view_controls, text="A+", command=lambda: self.adjust_font(1), width=3)
+        self.font_plus.pack(side="left", padx=2)
         self.title_label = ttk.Label(header, style="Title.TLabel")
         self.title_label.pack(anchor="w")
         self.subtitle_label = ttk.Label(header, style="Subtitle.TLabel")
         self.subtitle_label.pack(anchor="w", pady=(3, 0))
 
-        content = ttk.Frame(self, style="App.TFrame", padding=14)
-        content.pack(fill="both", expand=True)
+        body = ttk.Frame(self, style="App.TFrame")
+        body.pack(fill="both", expand=True)
+        self.canvas = tk.Canvas(body, highlightthickness=0, background=self.colors["background"])
+        page_scroll = ttk.Scrollbar(body, command=self.canvas.yview)
+        page_scroll.pack(side="right", fill="y")
+        self.canvas.configure(yscrollcommand=page_scroll.set)
+        self.canvas.pack(fill="both", expand=True)
+        content = ttk.Frame(self.canvas, style="App.TFrame", padding=14)
+        self.content = content
+        self.content_window = self.canvas.create_window((0,0), window=content, anchor="nw")
+        self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfigure(self.content_window, width=e.width))
+        content.bind("<Configure>", self._wrap_content)
+        self.bind("<MouseWheel>", self._scroll_page, add="+")
+        self.workflow = ttk.Label(content, style="Muted.TLabel")
+        self.workflow.pack(fill="x", pady=(0,12))
 
         toolbar = ttk.Frame(content, style="App.TFrame")
         toolbar.pack(fill="x", pady=(0, 14))
         self.choose_button = ttk.Button(toolbar, style="Primary.TButton", command=self.choose_file)
         self.choose_button.pack(side="left")
+        self.sample_button = ttk.Button(toolbar, style="Toolbar.TButton", command=lambda: self.load_file(sample_path()))
+        self.sample_button.pack(side="left", padx=8)
         self.export_button = ttk.Button(toolbar, style="Toolbar.TButton", command=self.export_report, state="disabled")
         self.export_button.pack(side="left", padx=8)
-        self.language_button = ttk.Button(toolbar, style="Toolbar.TButton", command=self.toggle_language)
-        self.language_button.pack(side="right")
-        self.file_label = ttk.Label(toolbar, background="#f3f7f5", foreground="#42554f")
-        self.file_label.pack(side="left", padx=12)
+        self.file_label = ttk.Label(content, style="Muted.TLabel")
+        self.file_label.pack(fill="x", pady=(0,8))
         self.progress = ttk.Progressbar(content, mode="indeterminate")
-        self.progress.pack(fill="x", pady=(0, 8))
+        # Activity is shown only while processing.
 
-        metrics = ttk.Frame(content, style="App.TFrame")
+        metrics = self.metrics_frame = ttk.Frame(content, style="App.TFrame")
+        self.metric_cards = []
         metrics.pack(fill="x", pady=(0, 12))
         self.metric_widgets: dict[str, tuple[ttk.Label, ttk.Label]] = {}
         for key in ("score", "rows", "errors", "warnings", "missing_cost"):
             card = ttk.Frame(metrics, padding=(16, 11), style="MetricCard.TFrame")
-            card.pack(side="left", fill="x", expand=True, padx=(0, 9))
+            self.metric_cards.append(card)
             value = ttk.Label(card, text="—", style="Metric.TLabel")
             value.pack(anchor="w")
             name = ttk.Label(card, style="MetricName.TLabel")
@@ -185,7 +242,7 @@ class App(tk.Tk):
             self.filter_buttons[key] = button
         search_bar = ttk.Frame(content, style="App.TFrame")
         search_bar.pack(fill="x", pady=(0, 8))
-        self.search_label = ttk.Label(search_bar, background="#f3f7f5")
+        self.search_label = ttk.Label(search_bar, style="Muted.TLabel")
         self.search_label.pack(side="left")
         self.search_var = tk.StringVar()
         self.search_entry = ttk.Entry(search_bar, textvariable=self.search_var)
@@ -195,15 +252,15 @@ class App(tk.Tk):
         self.search_button.pack(side="left")
         self.clear_button = ttk.Button(search_bar, command=self.clear_search)
         self.clear_button.pack(side="left", padx=(6, 0))
-        self.filter_note = ttk.Label(content, background="#f3f7f5")
+        self.filter_note = ttk.Label(content, style="Muted.TLabel")
         self.filter_note.pack(anchor="w", pady=(0, 6))
         self.result_banner = ttk.Label(content, style="Passed.TLabel")
 
         table_frame = ttk.Frame(content)
         table_frame.pack(fill="both", expand=True)
         columns = ("severity", "rule", "row", "column", "finding")
-        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", selectmode="browse")
-        widths = (90, 180, 65, 290, 560)
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", selectmode="browse", height=9)
+        widths = (130, 235, 70, 320, 560)
         for column, width in zip(columns, widths):
             self.tree.column(column, width=width, minwidth=55, stretch=column == "finding")
         self.tree.tag_configure("error", background="#fff0f0", foreground="#8e1b1b")
@@ -219,11 +276,13 @@ class App(tk.Tk):
         table_frame.rowconfigure(0, weight=1)
         table_frame.columnconfigure(0, weight=1)
         self.tree.bind("<<TreeviewSelect>>", self.show_selected_issue)
+        self.tree.bind("<Double-1>", self.focus_details)
+        self.tree.bind("<Return>", self.focus_details)
 
         self.details_frame = ttk.LabelFrame(content, padding=10)
         self.details_frame.pack(fill="x", side="bottom", pady=(12, 0))
         self.details = tk.Text(
-            self.details_frame, height=5, wrap="word", borderwidth=0, background="#ffffff",
+            self.details_frame, height=8, wrap="word", borderwidth=0, background="#ffffff",
             foreground="#263832", font=("Microsoft YaHei UI", 9), padx=6, pady=4,
         )
         detail_scroll = ttk.Scrollbar(self.details_frame, command=self.details.yview)
@@ -235,11 +294,15 @@ class App(tk.Tk):
         table_frame.pack_forget()
         table_frame.pack(fill="both", expand=True)
 
-        self.status = ttk.Label(self, anchor="w", padding=(12, 5), background="#e3ebe8", foreground="#40514b")
-        self.status.pack(fill="x", side="bottom", before=content)
+        self.status = ttk.Label(self, anchor="w", padding=(12, 5), style="Muted.TLabel")
+        self.status.pack(fill="x", side="bottom", before=body)
+        self.apply_presentation()
 
     def _refresh_text(self) -> None:
         self.refresh_filters()
+        self.sample_button.configure(text="打开示例" if self.language == "zh" else "Try sample")
+        self.workflow.configure(text="① 打开 CSV 或示例 → ② 筛选并复核提示 → ③ 导出完整报告；分析入口单独生成 SQL 汇总。" if self.language == "zh" else "1. Open CSV or sample → 2. Review findings → 3. Export full report. The analysis launcher separately builds SQL summaries.")
+        self.apply_presentation()
         self.coverage_button.configure(text="检查覆盖情况" if self.language == "zh" else "Check coverage")
         self.summary_button.configure(text="问题概览" if self.language == "zh" else "Finding overview")
         self.filtered_export_button.configure(text="导出当前筛选的问题" if self.language == "zh" else "Export filtered findings")
@@ -274,7 +337,12 @@ class App(tk.Tk):
         )
         if not selected:
             return
-        candidate = Path(selected)
+        self.load_file(Path(selected))
+
+    def load_file(self, candidate):
+        if self.busy:
+            return
+        candidate = Path(candidate)
 
         def loaded(result):
             self.source_path = candidate
@@ -296,8 +364,10 @@ class App(tk.Tk):
         for widget in (self.choose_button, self.export_button, self.language_button,
                        self.filtered_export_button, self.summary_button,
                        self.search_entry, self.search_button, self.clear_button,
+                       self.sample_button, self.theme_button, self.font_minus, self.font_plus,
                        *self.filter_buttons.values()):
             widget.configure(state="disabled")
+        self.progress.pack(fill="x", pady=(0,8), before=self.metrics_frame)
         self.progress.start(15)
         self.status.configure(text=status)
         mailbox = Queue(maxsize=1)
@@ -318,8 +388,10 @@ class App(tk.Tk):
             self.busy = False
             self.progress.stop()
             self.progress.configure(value=0)
+            self.progress.pack_forget()
             for widget in (self.choose_button, self.language_button, self.search_entry,
-                           self.search_button, self.clear_button, self.summary_button):
+                           self.search_button, self.clear_button, self.summary_button,
+                           self.sample_button, self.theme_button, self.font_minus, self.font_plus):
                 widget.configure(state="normal")
             self.export_button.configure(state="normal" if self.result else "disabled")
             self.refresh_filters()
@@ -459,6 +531,7 @@ class App(tk.Tk):
         if not self.result or self.busy:
             return
         window = tk.Toplevel(self)
+        window.configure(background=self.colors["background"])
         window.title("问题概览 / Finding overview")
         window.geometry("950x440")
         note = ("全文件汇总；各规则记录数分别去重，不能直接相加。双击规则查看对应问题（清除搜索）。"
@@ -510,6 +583,7 @@ class App(tk.Tk):
         if not self.result:
             return
         window = tk.Toplevel(self)
+        window.configure(background=self.colors["background"])
         window.title("检查覆盖情况 / Check coverage")
         window.geometry("920x500")
         area = tk.Text(window, wrap="word")
@@ -529,17 +603,18 @@ class App(tk.Tk):
         if not selected or selected[0] not in self.issue_by_item:
             return
         issue = self.issue_by_item[selected[0]]
-        lines = [f"[{self.t[issue.severity]}] {self.finding_text(issue)}", f"Rule: {issue.rule}", issue.message]
+        lines = [f"{self.t[issue.severity]} · {self.rule_label(issue.rule)}"]
         record = record_for(self.result, issue)
         for key, zh, en in (("VMP_PRODUCT_NAME", "药品", "Medicine"), ("ODS_CODE", "机构编码", "Organisation code"),
                             ("YEAR_MONTH", "月份", "Month"), ("VMP_SNOMED_CODE", "药品编码", "Product code")):
             lines.append(f"{zh if self.language == 'zh' else en}: {record.get(key) or '—'}")
         if issue.row:
             lines.append(f"{self.t['row']}: {issue.row}")
-        if issue.column:
-            lines.append(f"{self.t['column']}: {issue.column}")
         if issue.value is not None:
             lines.append(f"{self.t['value']}: {issue.value}")
+        if issue.column:
+            lines.append(f"{self.t['column']}: {issue.column}")
+        lines.append(self.finding_text(issue))
         if issue.guidance:
             lines.append(f"{self.t['guidance']}: {issue.guidance}")
         self._set_details("\n".join(lines))

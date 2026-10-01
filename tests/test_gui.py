@@ -33,6 +33,30 @@ class GuiTests(unittest.TestCase):
             time.sleep(0.005)
         self.assertTrue(predicate(), "Background task did not finish")
 
+    def test_theme_and_font_preserve_snapshot_filter_and_selected_issue(self):
+        self.app._render_result()
+        self.app.select_filter("value.negative")
+        item = next(iter(self.app.issue_by_item))
+        self.app.tree.selection_set(item)
+        before = self.app.result
+        rows = self.app.filtered_issues()
+        self.app.toggle_theme()
+        self.app.adjust_font(2)
+        self.assertIs(self.app.result, before)
+        self.assertEqual(self.app.filtered_issues(), rows)
+        self.assertEqual(self.app.tree.selection(), (item,))
+        self.assertEqual(self.app.theme, "dark")
+        self.assertEqual(self.app.font_size, 12)
+        self.assertEqual(self.app.details["background"], self.app.colors["surface"])
+
+    def test_sample_button_loads_bundled_example_in_background(self):
+        self.app.sample_button.invoke()
+        self.pump_until(lambda: not self.app.busy)
+        self.assertEqual(self.app.result.row_count, 8)
+        self.assertEqual(self.app.source_path.name, "sample_scmd.csv")
+        self.assertFalse(self.app.export_button.instate(["disabled"]))
+        self.assertEqual(self.app.progress.winfo_manager(), "")
+
     def test_background_check_keeps_event_loop_live_and_blocks_duplicate_load(self):
         release = Event()
         self.addCleanup(release.set)

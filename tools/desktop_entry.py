@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+import time
 
 from rxdatalint.gui import App, main
 from rxdatalint.validator import validate_csv
@@ -26,6 +27,15 @@ if __name__ == "__main__":
             assert findings
             app.toggle_language()
             assert app.filtered_issues() == findings
+            app.toggle_theme()
+            app.adjust_font(1)
+            assert app.filtered_issues() == findings
+            app.sample_button.invoke()
+            deadline = time.monotonic() + 30
+            while app.busy and time.monotonic() < deadline:
+                app.update()
+                time.sleep(.01)
+            assert not app.busy and app.result.row_count == 8
             app.show_summary()
             app.update()
             with tempfile.TemporaryDirectory() as directory:

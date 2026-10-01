@@ -1,0 +1,14 @@
+{
+  "duration_seconds": 179.83,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "codec": "H.264 / AAC",
+  "full_decode": "passed",
+  "mean_audio_db": -16.6,
+  "peak_audio_db": -1.1,
+  "method": "Edited real native desktop captures with animated explanatory overlays; not continuous raw recording, not maintainer voice. Chinese chapter highlights are not a verbatim translation. No real-user effectiveness claim.",
+  "ui_checks": 8,
+  "date": "2026-10-01"
+}

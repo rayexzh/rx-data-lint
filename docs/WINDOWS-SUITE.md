@@ -47,4 +47,11 @@ python -m pip install pyinstaller==6.22.3
 python tools/build_windows_suite.py
 ```
 
-The build refuses existing versioned output folders, runs both packaged diagnostics, extracts the ZIP into a path containing spaces and Chinese characters, repeats the checks, then writes the checksum and validation summary. Output: `dist/RxDataLint-Windows-x64-v0.3.0-alpha.2.zip`.
+The build refuses existing versioned output folders, runs both packaged diagnostics, extracts the ZIP into a path containing spaces and Chinese characters, repeats the checks, then writes the checksum and validation summary. Output: `dist/RxDataLint-Windows-x64-v0.4.0-alpha.1.zip`.
+
+
+## First example / 第一个示例
+
+Checker: **Try sample / 打开示例** runs the bundled eight-row fictional CSV. Analysis: **Use sample / 使用示例** also fills source `synthetic`; click Generate and verify and choose an output folder. Theme/font/language changes affect display only. / 示例按钮免去找文件；界面设置不改变数据。
+
+BatchScope is downloaded separately from [its own releases](https://github.com/rayexzh/batchscope/releases). / BatchScope 请单独下载。

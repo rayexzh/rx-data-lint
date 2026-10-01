@@ -1,0 +1,109 @@
+{
+  "project": "RxDataLint",
+  "version": "0.4.0-alpha.1",
+  "duration_seconds": 179.83,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fps": 20,
+  "voice": "Microsoft Zira Desktop, en-US, locally synthesized, rate +2",
+  "method": "Edited real native desktop captures with animated explanatory overlays; not continuous raw recording, not maintainer voice. Chinese chapter highlights are not a verbatim translation. No real-user effectiveness claim.",
+  "data": "Bundled synthetic sample, 8 rows / 4 affected records / 6 errors / 9 warnings",
+  "chapters": [
+    {
+      "chapter": "A CSV is not a conclusion",
+      "start": 0,
+      "end": 14.7
+    },
+    {
+      "chapter": "Start with a safe example",
+      "start": 14.7,
+      "end": 29.08
+    },
+    {
+      "chapter": "Count records, not just messages",
+      "start": 29.08,
+      "end": 42.41
+    },
+    {
+      "chapter": "A negative value needs context",
+      "start": 42.41,
+      "end": 57.29
+    },
+    {
+      "chapter": "Follow a finding back to its record",
+      "start": 57.29,
+      "end": 71.64
+    },
+    {
+      "chapter": "Check what actually ran",
+      "start": 71.64,
+      "end": 84.64
+    },
+    {
+      "chapter": "Find the records you need",
+      "start": 84.64,
+      "end": 100.33
+    },
+    {
+      "chapter": "Choose the right export",
+      "start": 100.33,
+      "end": 116.19
+    },
+    {
+      "chapter": "Move from checking to analysis",
+      "start": 116.19,
+      "end": 130.32
+    },
+    {
+      "chapter": "Missing is not zero",
+      "start": 130.32,
+      "end": 145.09
+    },
+    {
+      "chapter": "Make the review easier to read",
+      "start": 145.09,
+      "end": 159.91
+    },
+    {
+      "chapter": "Two focused, independent projects",
+      "start": 159.91,
+      "end": 179.83
+    }
+  ],
+  "files": {
+    "QUALITY_CHECK.json": {
+      "bytes": 465,
+      "sha256": "ff3dd2a5a773f4191672ee982d84f395700e7b945b6ae97c332aa17cc08ef261"
+    },
+    "RxDataLint-Animated-Walkthrough.mp4": {
+      "bytes": 4971959,
+      "sha256": "cd60986b6386573ddcb3eb6e30304c97e6a5e6dda88010d3eeb24c46fe809289"
+    },
+    "RxDataLint-Chinese-Highlights.srt": {
+      "bytes": 1037,
+      "sha256": "c910482b6200059b1c8e62476abe9ab7587b812c48869ddcc6ea8914afa7d66b"
+    },
+    "RxDataLint-English-Narration.wav": {
+      "bytes": 7930544,
+      "sha256": "a61f89d0de1adda2c19639da75bf0e5b5f60b0581a90d98ca0996b9504cbc5a0"
+    },
+    "RxDataLint-English-Script.md": {
+      "bytes": 4661,
+      "sha256": "b5f2d0dd0641c7077b6f0108ed481d9014a777e617cd15942b341e59cb2e2130"
+    },
+    "RxDataLint-English-Subtitles.srt": {
+      "bytes": 3866,
+      "sha256": "deca086509de832c29306fd7a6b98db0853ec869e9dd709f8de9bde6398a4b12"
+    },
+    "START_HERE.txt": {
+      "bytes": 608,
+      "sha256": "d6b22ff6783cc7a10bed6cf48294bbaef3b8f79e7d8fb36c41107b4692424204"
+    },
+    "UI_CHECK.json": {
+      "bytes": 925,
+      "sha256": "171204fa235b5c11ebc65cddeb786dc9fc5ea490e661dc77ab73d32a9ae2c9e2"
+    }
+  }
+}

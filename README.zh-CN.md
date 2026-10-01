@@ -1,16 +1,23 @@
 # RxDataLint
 
-**Windows 下载：** [v0.3.0-alpha.2 便携运行包](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2) · [中英文启动说明](docs/WINDOWS-SUITE.md)。完整解压 ZIP 后，选择 Start-Checker.bat 或 Start-Analysis.bat。
+**NHS 药品数据复核与本地 SQL 分析 · v0.4.0-alpha.1**
 
-**新版离线分析报告：** [预览和下载七月中英文示例](analysis/examples/202607/README.md)。v0.3 便携包包含检查和分析两个程序；源码用户仍可双击 `run_analysis_desktop.bat`。
+[English](README.md) · [Windows 下载](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.1) · [动画操作视频](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [文档导航](docs/INDEX.md)
 
-[作品集路线：Rx 的维护边界及下一项模拟质量数据项目](docs/PORTFOLIO_ROADMAP.md)
+RxDataLint 帮助你在解读 SCMD 药品统计之前复核 CSV 数据。一个项目包含同一流程的两个入口：
 
-**作品集入口：** [业务问题、实现、图表和验证情况](docs/PORTFOLIO.zh-CN.md)。2026 年 7 月案例展示排除负数造成约 £1,031.76 万的汇总差异；这是处理场景对比，不是节省金额。
+| 桌面入口 | 用途 |
+|---|---|
+| **Start-Checker.bat** | 查看提示、检查覆盖和原始记录，导出完整或筛选结果。 |
+| **Start-Analysis.bat** | 生成 SQLite/SQL 汇总及已核对的中英文离线报告。 |
 
-**配套 SQL 分析案例：** [NHS 药品数据分析](analysis/README.zh-CN.md) 使用现有检查规则，生成本地 SQLite 数据库及五份可导入 Power BI 的汇总。[2026 年 7 月案例](analysis/CASE_STUDY.md) 展示负数记录如何影响成本汇总。
+**第一次使用：**下载 Windows ZIP，完整解压，打开 **Start-Checker.bat**，点击 **打开示例**。无需安装 Python，也无需付费 API。需要 SQL 分析时，打开 **Start-Analysis.bat**，选择 **使用示例**，再点击 **生成并校验**。
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+[视频讲稿与制作说明](docs/DEMO_VIDEO.md) · [启动指南](docs/QUICKSTART.md) · [公开数据案例](analysis/CASE_STUDY.md) · [作品集证据](docs/PORTFOLIO.zh-CN.md)
+
+![RxDataLint 桌面复核](docs/screenshots/checker-en.png)
+
+**独立项目：**BatchScope 使用自己的[仓库](https://github.com/rayexzh/batchscope)、版本和下载。模拟批次、偏差与措施功能不包含在 RxDataLint 中。[项目边界](docs/PROJECT_BOUNDARIES.md) 解释两者的区别。
 
 [![Tests](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml/badge.svg)](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml)
 
@@ -46,7 +53,7 @@ RxDataLint 希望在“下载原始数据”和“制作分析结果”之间增
 - 导出规范化 CSV（不自动修正异常）、JSON 和 HTML 报告；
 - 所有数据处理均在用户电脑本地完成。
 
-## Windows 桌面程序
+## 从源码运行
 
 需要 Python 3.10 或更高版本，不需要安装第三方运行库。最简单的方法是双击：
 

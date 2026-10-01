@@ -1,14 +1,14 @@
 # Two-minute walkthrough / 两分钟上手
 
-For the v0.3 two-program suite, start with [Windows suite guide](WINDOWS-SUITE.md). / v0.3 两个程序的运行包请先阅读[便携包启动说明](WINDOWS-SUITE.md)。
+For the v0.4 two-program suite, start with [Windows suite guide](WINDOWS-SUITE.md). / v0.4 两个程序的运行包请先阅读[便携包启动说明](WINDOWS-SUITE.md)。
 
 ## 简体中文
 
 ### 启动
-将 Windows ZIP **全部解压**，双击其中的 `RxDataLint.exe`。不要只把 exe 拖出来，它需要旁边的 `_internal` 文件夹。不需要另外安装 Python。当前运行包未签名，属于 Alpha 预发布版。
+将 Windows ZIP **全部解压**，打开 `Start-Checker.bat`。不要只把 exe 拖出来，它需要旁边的 `_internal` 文件夹。不需要另外安装 Python。当前运行包未签名，属于 Alpha 预发布版。
 
 ### 0:00–0:30：载入示例
-点击“选择 SCMD CSV”，在解压目录的 `examples` 文件夹选择 `sample_scmd.csv`。不要双击 CSV（那可能打开 Excel）。示例有 8 条记录，故意包含数据问题；程序不是在报告自身运行错误。
+点击“打开示例”，或点击“选择 SCMD CSV”，选择 `examples/sample_scmd.csv`。不要双击 CSV（那可能打开 Excel）。示例有 8 条记录，故意包含数据问题；程序不是在报告自身运行错误。
 
 ### 0:30–1:00：理解问题
 点击“问题概览”，查看各规则的提示数、关联记录数、机构数和药品数。一个记录可能触发多条规则，各组不能直接相加。双击规则进入对应列表（会清除先前搜索）。点击一条提示，在下方滚动查看药品、机构编码、月份、原值和处理建议。
@@ -26,10 +26,10 @@ For the v0.3 two-program suite, start with [Windows suite guide](WINDOWS-SUITE.m
 ## English
 
 ### Launch
-Extract the **entire** Windows ZIP and double-click `RxDataLint.exe`. Keep `_internal` beside it; do not copy the executable alone. Python installation is not required. The package is unsigned and is an alpha prerelease.
+Extract the **entire** Windows ZIP and open `Start-Checker.bat`. Keep `_internal` beside it; do not copy the executable alone. Python installation is not required. The package is unsigned and is an alpha prerelease.
 
 ### 0:00–0:30: Load the example
-Click **Choose SCMD CSV**, then select `examples/sample_scmd.csv` inside the extracted folder. Do not double-click the CSV, which may open Excel. It contains 8 records with deliberate data problems; findings are not application crashes.
+Click **Try sample**, or **Choose SCMD CSV**, then select `examples/sample_scmd.csv` inside the extracted folder. Do not double-click the CSV, which may open Excel. It contains 8 records with deliberate data problems; findings are not application crashes.
 
 ### 0:30–1:00: Understand findings
 Open **Finding overview** for rule-level counts of findings, associated records, organisations and products. Record counts overlap between rules and must not be added. Double-click a rule to inspect it (clears any search). Select a finding and scroll through its medicine, organisation code, month, source value and guidance.
@@ -53,4 +53,4 @@ python -m pip install pyinstaller==6.22.3
 python tools/build_windows_suite.py
 ```
 
-Output / 输出：`dist/RxDataLint-Windows-x64-v0.3.0-alpha.2.zip` and its SHA-256 file. The build script runs a packaged smoke test before creating the ZIP. Test on another Windows computer before calling the package broadly compatible.
+Output / 输出：`dist/RxDataLint-Windows-x64-v0.4.0-alpha.2.zip` and its SHA-256 file. The build script runs a packaged smoke test before creating the ZIP. Test on another Windows computer before calling the package broadly compatible.

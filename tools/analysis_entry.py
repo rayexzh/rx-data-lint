@@ -20,6 +20,11 @@ def self_test(source, diagnostic):
         root = tk.Tk()
         root.withdraw()
         app = AnalysisWindow(root)
+        app.use_sample()
+        assert Path(app.csv.get()).is_file() and app.source.get() == "synthetic"
+        app.toggle_language()
+        app.toggle_theme()
+        app.adjust_font(1)
 
         def run(csv, parent):
             app.csv.set(str(csv))

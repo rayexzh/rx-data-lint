@@ -1,5 +1,12 @@
 # Change log / 更新日志
 
+## v0.4.0-alpha.1 (2026-10-01) — Clear desktop workflow / 清晰桌面流程
+
+- Rx keeps its SCMD checker and SQL analysis; BatchScope is maintained in its own repository. Old release history is retained. / 更新独立项目边界，保留历史。
+- Added local sample buttons, light/dark palettes, adjustable fonts, language controls, workflow guidance and scrollable pages. Double-click/Enter reaches complete record context. / 新增示例、主题、字号、语言和详情定位。
+- Added an animated English walkthrough with Chinese highlights, real desktop states and disclosed synthetic narration. / 动画讲解明确来源与合成配音。
+- Validation: 34 checker tests and 13 analysis tests passed locally. Packaged checks and limits are attached to the release. / 本地 47 项测试通过，运行包证据见附件。
+
 ## v0.3.0-alpha.2 (2026-09-30) — Analysis boundary fixes / 分析边界修复
 
 - Reject malformed manifests, unsupported versions, unsafe artifact names and invalid hash formats with actionable errors. / 校验文件异常时给出明确错误。

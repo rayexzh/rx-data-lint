@@ -1,16 +1,23 @@
 # RxDataLint
 
-**Windows download:** [v0.3.0-alpha.2 portable suite](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.3.0-alpha.2) · [Bilingual startup guide](docs/WINDOWS-SUITE.md). Extract the entire ZIP and choose Start-Checker.bat or Start-Analysis.bat.
+**NHS medicines data review and local SQL analysis · v0.4.0-alpha.1**
 
-**Offline analysis reports:** [Preview and download the bilingual July 2026 example](analysis/examples/202607/README.md). The v0.3 portable suite includes both the checker and analysis programs; `run_analysis_desktop.bat` remains the source launcher.
+[简体中文](README.zh-CN.md) · [Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.1) · [Animated walkthrough](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [Documentation](docs/INDEX.md)
 
-[Portfolio roadmap: current maintenance boundary and the next synthetic quality-data project](docs/PORTFOLIO_ROADMAP.md)
+RxDataLint helps you review SCMD CSV data before interpreting medicines totals. One repository contains two steps of the same workflow:
 
-**Portfolio overview:** [Problem, implementation, figures and verification](docs/PORTFOLIO.md). The July 2026 case shows a £10.32m difference caused by excluding negative costs; this is a processing sensitivity, not a saving.
+| Desktop entry | Purpose |
+|---|---|
+| **Start-Checker.bat** | Review CSV findings, coverage and source records; export full or filtered evidence. |
+| **Start-Analysis.bat** | Build SQLite/SQL summaries and verified offline Chinese/English reports. |
 
-**Companion SQL case study:** [NHS Medicines Analytics](analysis/README.md) builds a local SQLite database and five Power BI-ready summaries using the same validation rules. [July 2026 findings](analysis/CASE_STUDY.md) demonstrate how negative records affect cost reporting.
+**Quick start:** download the Windows ZIP, extract it completely, open **Start-Checker.bat**, and click **Try sample**. No Python installation or paid API is needed. For SQL output, open **Start-Analysis.bat**, select **Use sample**, then **Generate and verify**.
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+[English video script and production disclosure](docs/DEMO_VIDEO.md) · [Startup guide](docs/QUICKSTART.md) · [Worked public-data case](analysis/CASE_STUDY.md) · [Portfolio evidence](docs/PORTFOLIO.md)
+
+![RxDataLint desktop review](docs/screenshots/checker-en.png)
+
+**Independent project:** BatchScope has its own [repository](https://github.com/rayexzh/batchscope), versions and downloads. Its synthetic batch/deviation/action workflow is not included in RxDataLint. See [project boundaries](docs/PROJECT_BOUNDARIES.md).
 
 [![Tests](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml/badge.svg)](https://github.com/rayexzh/rx-data-lint/actions/workflows/tests.yml)
 
@@ -50,11 +57,10 @@ potential problems early without uploading their data to a third-party service.
 It exports a canonical CSV plus JSON and standalone HTML quality reports. All
 processing stays on the user's computer.
 
-The desktop interface starts in Chinese and includes an English switch for UK
-users. Findings are colour coded, the table scrolls horizontally, and selecting
+The desktop interface starts in Chinese and includes an English switch, light/dark themes, adjustable fonts and a one-click synthetic sample. Findings are colour coded, the table scrolls horizontally, and selecting
 a finding shows its complete value and guidance below the table.
 
-## Run the desktop program
+## Run from source
 
 Python 3.10 or later is required. No third-party runtime dependency is needed.
 On Windows, double-click `run_desktop.bat` to launch the program without an
