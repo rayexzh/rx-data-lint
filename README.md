@@ -70,6 +70,6 @@ rx-data-lint examples/sample_scmd.csv --output outputs/demo
 - [Startup and Windows packaging](docs/WINDOWS-SUITE.md)
 - [SQL queries, outputs and Power BI handoff](analysis/README.md)
 - [Changes](CHANGELOG.md), [contributing](CONTRIBUTING.md) and [security](SECURITY.md)
-- [Scripted usability review](docs/SIMULATED-USABILITY-REVIEW.md) — automated checks, not external user feedback.
+- [Scripted usability review](docs/SIMULATED-USABILITY-REVIEW.md) and [analyst role walkthrough](docs/SIMULATED-ROLE-REVIEW-2026-10-04.md) — automated checks, not external user feedback.
 
 The walkthrough shows an earlier interface; its recording method is documented in the video guide. [BatchScope](https://github.com/rayexzh/batchscope) is a separate project for synthetic manufacturing-quality records, with its own downloads and versions.
