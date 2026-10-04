@@ -47,7 +47,7 @@ python -m pip install pyinstaller==6.22.3
 python tools/build_windows_suite.py
 ```
 
-The build refuses existing versioned output folders, runs both packaged diagnostics, extracts the ZIP into a path containing spaces and Chinese characters, repeats the checks, then writes the checksum and validation summary. Output: `dist/RxDataLint-Windows-x64-v0.4.0-alpha.3.zip`.
+The build refuses existing versioned output folders, runs both packaged diagnostics, extracts the ZIP into a path containing spaces and Chinese characters, repeats the checks, then writes the checksum and validation summary. Output: `dist/RxDataLint-Windows-x64-v0.4.0-alpha.4.zip`.
 
 
 ## First example / 第一个示例

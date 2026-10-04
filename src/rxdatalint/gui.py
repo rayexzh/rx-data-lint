@@ -109,6 +109,7 @@ class App(tk.Tk):
         self._render_id = None
         self.source_path: Path | None = None
         self.issue_by_item: dict[str, Issue] = {}
+        self.review_windows: list[tk.Toplevel] = []
         self.title("RxDataLint — NHS medicines data quality")
         self.geometry(f"1180x{min(900, self.winfo_screenheight()-100)}")
         self.minsize(900, 600)
@@ -375,6 +376,11 @@ class App(tk.Tk):
         candidate = Path(candidate)
 
         def loaded(result):
+            # Review popups contain findings from the previous source snapshot.
+            for window in self.review_windows:
+                if window.winfo_exists():
+                    window.destroy()
+            self.review_windows.clear()
             self.source_path = candidate
             self.result = result
             self.search_query = ""
@@ -572,6 +578,8 @@ class App(tk.Tk):
         if not self.result or not self.result.issues or self.busy:
             return
         window = tk.Toplevel(self)
+        self.review_windows.append(window)
+        snapshot = self.result
         window.title("分组查看 / Group findings")
         window.geometry("930x530")
         window.minsize(620, 360)
@@ -601,6 +609,8 @@ class App(tk.Tk):
         keys = []
 
         def refill(_event=None):
+            if self.result is not snapshot:
+                return
             table.delete(*table.get_children())
             keys.clear()
             selected_dimension = options[dimension.current()][0]
@@ -618,7 +628,7 @@ class App(tk.Tk):
 
         def drill(_event=None):
             selected = table.selection()
-            if not selected or self.busy:
+            if not selected or self.busy or self.result is not snapshot:
                 return
             self.active_group = (options[dimension.current()][0], keys[int(selected[0])])
             self._render_result()
@@ -640,6 +650,8 @@ class App(tk.Tk):
         if not self.result or self.busy:
             return
         window = tk.Toplevel(self)
+        self.review_windows.append(window)
+        snapshot = self.result
         window.configure(background=self.colors["background"])
         window.title("问题概览 / Finding overview")
         window.geometry("950x440")
@@ -664,7 +676,7 @@ class App(tk.Tk):
             ttk.Label(window, text=self.t["passed"], padding=12).pack()
 
         def review(_event):
-            if table.selection() and not self.busy:
+            if table.selection() and not self.busy and self.result is snapshot:
                 self.search_query = ""
                 self.search_var.set("")
                 self.select_filter(table.selection()[0])
@@ -694,6 +706,7 @@ class App(tk.Tk):
         if not self.result:
             return
         window = tk.Toplevel(self)
+        self.review_windows.append(window)
         window.configure(background=self.colors["background"])
         window.title("检查覆盖情况 / Check coverage")
         window.geometry("920x500")

@@ -115,6 +115,27 @@ class GuiTests(unittest.TestCase):
         self.assertIs(self.app.result, previous)
         self.assertFalse(self.app.choose_button.instate(["disabled"]))
 
+    def test_review_popups_follow_loaded_file_and_survive_failed_load(self):
+        self.app.show_groups()
+        groups = self.app.winfo_children()[-1]
+        self.app.show_summary()
+        summary = self.app.winfo_children()[-1]
+        self.app.show_coverage()
+        coverage = self.app.winfo_children()[-1]
+        old_result = self.app.result
+        with patch("rxdatalint.gui.validate_csv", side_effect=OSError("broken")), \
+             patch("rxdatalint.gui.messagebox.showerror"):
+            self.app.load_file("broken.csv")
+            self.pump_until(lambda: not self.app.busy)
+        self.assertIs(self.app.result, old_result)
+        self.assertTrue(all(w.winfo_exists() for w in (groups, summary, coverage)))
+        fresh = validate_csv(Path(__file__).parents[1] / "examples" / "sample_scmd.csv")
+        with patch("rxdatalint.gui.validate_csv", return_value=fresh):
+            self.app.load_file("new.csv")
+            self.pump_until(lambda: not self.app.busy)
+        self.assertIs(self.app.result, fresh)
+        self.assertFalse(any(w.winfo_exists() for w in (groups, summary, coverage)))
+
     def test_new_search_cancels_pending_table_batches(self):
         self.app.result.issues *= 100
         self.app._render_result()

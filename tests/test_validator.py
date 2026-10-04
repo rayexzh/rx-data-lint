@@ -1,5 +1,6 @@
 import unittest
 import tempfile
+import csv
 from pathlib import Path
 
 from rxdatalint.validator import validate_csv
@@ -9,6 +10,14 @@ SAMPLE = Path(__file__).parents[1] / "examples" / "sample_scmd.csv"
 
 
 class ValidatorTests(unittest.TestCase):
+    def test_unterminated_quoted_record_is_rejected(self):
+        header = SAMPLE.read_text(encoding="utf-8").splitlines()[0]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "truncated.csv"
+            path.write_text(header + '\n2026-07,R1A,42109611000001109,"truncated\n', encoding="utf-8")
+            with self.assertRaises(csv.Error):
+                validate_csv(path)
+
     def test_sample_finds_material_quality_problems(self):
         result = validate_csv(SAMPLE)
         rules = {issue.rule for issue in result.issues}

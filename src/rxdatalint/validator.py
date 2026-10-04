@@ -176,7 +176,9 @@ def validate_csv(path: str | Path) -> ValidationResult:
             for column in numeric_columns for rule in ("value.numeric", "value.negative")]
 
     with io.StringIO(content.decode("utf-8-sig"), newline="") as handle:
-        reader = csv.DictReader(handle)
+        # Fail closed on truncated quoted records instead of silently accepting
+        # the remaining file as one field.
+        reader = csv.DictReader(handle, strict=True)
         if not reader.fieldnames:
             return ValidationResult(str(source), 0, [], [Issue(
                 "schema.empty", "error", "The CSV has no header row."

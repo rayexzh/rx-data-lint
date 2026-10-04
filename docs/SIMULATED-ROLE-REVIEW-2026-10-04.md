@@ -15,3 +15,7 @@ The public CSV was read locally and was **not committed** to this repository. Ti
 **Verification / 验证：** 35 checker tests and 15 analysis tests passed. No reproducible software defect was found in this walkthrough. / 检查器 35 项、分析模块 15 项测试通过；本轮未发现可复现的软件缺陷。
 
 **Unverified need / 待验证需求：** 7,142 negative-value prompts may be too many for record-by-record review. Grouping by organisation, medicine and reason is a candidate feature, but whether it helps should be checked with an actual SCMD analyst. This tool cannot determine the business meaning of each adjustment or the true procurement cost. / 大量提示是否需要按机构、药品、原因归组，应由真实数据使用者验证；程序不能代替业务解释。
+
+## Follow-up source-switch review / 后续文件切换复核
+
+A second scripted review found that a truncated quoted CSV record could be accepted by the parser. It also found that an old group or summary window remained open after a new source loaded and could act on the new result. Both behaviours were reproduced in failing tests and fixed in v0.4.0-alpha.4. The public July 2026 provisional file still yields 319,345 records and 21,563 prompts. / 第二轮模拟复核发现截断引号记录可能被解析，以及切换文件后旧概览窗口仍可操作新结果；两项都先写出失败测试，再修复于 v0.4.0-alpha.4。公开数据仍得到 319,345 条记录、21,563 条提示。

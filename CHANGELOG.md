@@ -1,5 +1,11 @@
 # Change log / 更新日志
 
+## v0.4.0-alpha.4 (2026-10-04) — Safer CSV and source switching / CSV 与文件切换修复
+
+- Reject truncated quoted CSV records instead of silently treating them as valid data. / 拒绝引号未闭合的截断 CSV，避免误读为有效数据。
+- Close source-specific review windows after a successful file change; keep them after a failed load. / 成功切换文件时关闭旧复核窗口，加载失败则保留旧结果。
+- Verified with a malformed fixture and the public July 2026 provisional SCMD file; synthetic role-play is not external validation. / 用异常样本与公开数据验证；模拟岗位试用不等于外部验收。
+
 ## v0.4.0-alpha.3 (2026-10-04) — Group findings / 分组复核
 
 - Group the current findings by rule, organisation or medicine and open a group to inspect its source row. / 按规则、机构或药品汇总当前提示，并定位到原始行。
