@@ -1,5 +1,7 @@
 # Documentation / 文档导航
 
+Current release / 当前版本：[v0.4.0-alpha.3 grouped review / 分组复核](RELEASE-v0.4.0-alpha.3.md).
+
 | Need / 需要 | Read / 入口 |
 |---|---|
 | First run / 第一次打开 | [Quick start](QUICKSTART.md) · [Windows suite](WINDOWS-SUITE.md) |

@@ -7,8 +7,10 @@ import time
 from threading import Event, get_ident
 import unittest
 from unittest.mock import patch
+from tkinter import ttk
 
 from rxdatalint.gui import App
+from rxdatalint.review import finding_group
 from rxdatalint.validator import validate_csv
 
 
@@ -66,7 +68,8 @@ class GuiTests(unittest.TestCase):
         app._render_result()
         for _ in range(4):
             app.update()
-        for button in [*app.filter_buttons.values(), app.search_button, app.clear_button]:
+        for button in [*app.filter_buttons.values(), app.search_button, app.clear_button,
+                       app.groups_button, app.clear_group_button, app.filtered_export_button]:
             self.assertTrue(button.winfo_ismapped())
             self.assertGreaterEqual(button.winfo_width(), button.winfo_reqwidth())
             self.assertLessEqual(button.winfo_x()+button.winfo_width(), button.master.winfo_width())
@@ -168,6 +171,47 @@ class GuiTests(unittest.TestCase):
         self.assertEqual(self.app.filtered_issues(), [
             i for i in self.app.result.issues if i.rule == "value.negative"
         ])
+
+    def test_group_drilldown_and_filtered_export_retain_exact_scope(self):
+        issue = next(i for i in self.app.result.issues if i.rule == "value.negative" and i.row)
+        group_key = finding_group(self.app.result, issue, "organisation")[0]
+        self.app.select_filter("value.negative")
+        self.app.active_group = ("organisation", group_key)
+        self.app._render_result()
+        expected = self.app.filtered_issues()
+        self.assertTrue(expected)
+        self.assertTrue(all(finding_group(self.app.result, i, "organisation")[0] == group_key
+                            and i.rule == "value.negative" for i in expected))
+        with tempfile.TemporaryDirectory() as directory:
+            with patch("rxdatalint.gui.filedialog.askdirectory", return_value=directory), \
+                 patch("rxdatalint.gui.messagebox.showinfo"):
+                self.app.export_filtered()
+                self.pump_until(lambda: not self.app.busy)
+            payload = json.loads(next(Path(directory).glob("findings-*/filtered-findings.json")).read_text(encoding="utf-8"))
+            self.assertEqual(payload["selected_findings"], len(expected))
+            self.assertEqual((payload["group_by"], payload["group_key"]), ("organisation", group_key))
+        self.app.clear_group()
+        self.assertIsNone(self.app.active_group)
+        self.assertGreaterEqual(len(self.app.filtered_issues()), len(expected))
+
+    def test_group_overview_opens_and_drills_into_source_finding(self):
+        self.app._render_result()
+        self.app.show_groups()
+        window = self.app.winfo_children()[-1]
+        self.addCleanup(lambda: window.destroy() if window.winfo_exists() else None)
+        dimension = next(child for child in window.winfo_children() if isinstance(child, ttk.Combobox))
+        dimension.current(1)
+        dimension.event_generate("<<ComboboxSelected>>")
+        frame = next(child for child in window.winfo_children() if isinstance(child, ttk.Frame))
+        table = next(child for child in frame.winfo_children() if isinstance(child, ttk.Treeview))
+        self.assertTrue(table.get_children())
+        table.selection_set(table.get_children()[0])
+        expected_key = table.item(table.selection()[0], "values")[0]
+        next(child for child in window.winfo_children() if isinstance(child, ttk.Button)).invoke()
+        self.assertEqual(self.app.active_group, ("organisation", f"ods:{expected_key}"))
+        self.assertTrue(self.app.issue_by_item)
+        self.assertTrue(self.app.tree.selection())
+        self.assertIn(expected_key, self.app.details.get("1.0", "end"))
 
     def test_export_after_empty_search_keeps_all_findings(self):
         self.assertEqual(self.search("no-such-product-xyz"), [])

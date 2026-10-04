@@ -10,7 +10,7 @@ from tkinter import filedialog, messagebox, ttk
 import tkinter.font as tkfont
 
 from .reports import write_outputs
-from .review import record_for, summarise, write_filtered_findings
+from .review import finding_group, group_findings, record_for, summarise, write_filtered_findings
 from .validator import Issue, validate_csv
 from .presentation import configure_theme, enable_dpi_awareness, sample_path, layout_flow
 
@@ -102,6 +102,7 @@ class App(tk.Tk):
         self.font_size = 10
         self.search_query = ""
         self.active_filter = "all"
+        self.active_group: tuple[str, str] | None = None
         self.result = None
         self.busy = False
         self._poll_id = None
@@ -248,6 +249,10 @@ class App(tk.Tk):
         self.coverage_button.pack(side="left", padx=(0, 8))
         self.summary_button = ttk.Button(review_bar, command=self.show_summary)
         self.summary_button.pack(side="left")
+        self.groups_button = ttk.Button(review_bar, command=self.show_groups)
+        self.groups_button.pack(side="left", padx=8)
+        self.clear_group_button = ttk.Button(review_bar, command=self.clear_group, state="disabled")
+        self.clear_group_button.pack(side="left")
         self.filtered_export_button = ttk.Button(review_bar, command=self.export_filtered, state="disabled")
         self.filtered_export_button.pack(side="left", padx=8)
         self.filter_bar = ttk.Frame(content, style="App.TFrame")
@@ -258,7 +263,8 @@ class App(tk.Tk):
             button.pack(side="left", padx=(0, 6))
             self.filter_buttons[key] = button
         self.button_rows = [(toolbar, [self.choose_button, self.sample_button, self.export_button]),
-                            (review_bar, [self.coverage_button, self.summary_button, self.filtered_export_button]),
+                            (review_bar, [self.coverage_button, self.summary_button, self.groups_button,
+                                          self.clear_group_button, self.filtered_export_button]),
                             (self.filter_bar, list(self.filter_buttons.values()))]
         for frame, buttons in self.button_rows:
             frame.bind("<Configure>", lambda event, container=frame, items=buttons: layout_flow(container, items, event.width))
@@ -327,6 +333,8 @@ class App(tk.Tk):
         self.apply_presentation()
         self.coverage_button.configure(text="检查覆盖情况" if self.language == "zh" else "Check coverage")
         self.summary_button.configure(text="问题概览" if self.language == "zh" else "Finding overview")
+        self.groups_button.configure(text="分组查看" if self.language == "zh" else "Group findings")
+        self.clear_group_button.configure(text="清除分组" if self.language == "zh" else "Clear group")
         self.filtered_export_button.configure(text="导出当前筛选的问题" if self.language == "zh" else "Export filtered findings")
         self.title_label.configure(text=self.t["title"])
         self.subtitle_label.configure(text=self.t["subtitle"])
@@ -372,6 +380,7 @@ class App(tk.Tk):
             self.search_query = ""
             self.search_var.set("")
             self.active_filter = "all"
+            self.active_group = None
             self.export_button.configure(state="normal")
             self._render_result()
 
@@ -385,6 +394,7 @@ class App(tk.Tk):
         self.busy = True
         for widget in (self.choose_button, self.export_button, self.language_button,
                        self.filtered_export_button, self.summary_button,
+                       self.groups_button, self.clear_group_button,
                        self.search_entry, self.search_button, self.clear_button,
                        self.sample_button, self.theme_button, self.font_minus, self.font_plus,
                        *self.filter_buttons.values()):
@@ -412,7 +422,7 @@ class App(tk.Tk):
             self.progress.configure(value=0)
             self.progress.pack_forget()
             for widget in (self.choose_button, self.language_button, self.search_entry,
-                           self.search_button, self.clear_button, self.summary_button,
+                           self.search_button, self.clear_button, self.summary_button, self.groups_button,
                            self.sample_button, self.theme_button, self.font_minus, self.font_plus):
                 widget.configure(state="normal")
             self.export_button.configure(state="normal" if self.result else "disabled")
@@ -487,7 +497,8 @@ class App(tk.Tk):
         primary = {"value.missing_cost", "value.negative", "series.extreme_quantity"}
         return [i for i in issues if (self.active_filter == "all" or
                 (self.active_filter == "other" and i.rule not in primary) or i.rule == self.active_filter)
-                and self.matches_search(i)]
+                and self.matches_search(i) and (self.active_group is None or
+                finding_group(self.result, i, self.active_group[0])[0] == self.active_group[1])]
 
     def matches_search(self, issue):
         if not self.search_query:
@@ -530,6 +541,11 @@ class App(tk.Tk):
 
     def select_filter(self, key):
         self.active_filter = key
+        self.active_group = None
+        self._render_result()
+
+    def clear_group(self):
+        self.active_group = None
         self._render_result()
 
     def refresh_filters(self):
@@ -545,9 +561,80 @@ class App(tk.Tk):
             button.configure(text=f"{label} ({count:,})", state="disabled" if key == self.active_filter else "normal")
         count = len(self.filtered_issues())
         self.filtered_export_button.configure(state="normal" if count and not self.busy else "disabled")
+        self.groups_button.configure(state="normal" if issues and not self.busy else "disabled")
+        self.clear_group_button.configure(state="normal" if self.active_group and not self.busy else "disabled")
         query = self.search_query
-        self.filter_note.configure(text=(f"显示 {count:,} 条提示｜搜索：{query or '无'}｜分类计数为搜索前总数；完整报告不受筛选影响。" if self.language == "zh"
-                                        else f"Showing {count:,} findings | Search: {query or 'none'} | Category totals are unsearched; full reports ignore filters."))
+        group_note = (f"｜分组：{self.active_group[0]} / {self.active_group[1]}" if self.active_group else "")
+        self.filter_note.configure(text=(f"显示 {count:,} 条提示｜搜索：{query or '无'}{group_note}｜分类计数为搜索前总数；完整报告不受筛选影响。" if self.language == "zh"
+                                        else f"Showing {count:,} findings | Search: {query or 'none'}{group_note} | Category totals are unsearched; full reports ignore filters."))
+
+    def show_groups(self):
+        if not self.result or not self.result.issues or self.busy:
+            return
+        window = tk.Toplevel(self)
+        window.title("分组查看 / Group findings")
+        window.geometry("930x530")
+        window.minsize(620, 360)
+        window.configure(background=self.colors["background"])
+        note = ("按当前规则和搜索分组；提示数可能大于关联记录数。双击分组查看提示及原始行；未定位项没有原始行。"
+                if self.language == "zh" else
+                "Groups use the current category and search. Findings may exceed distinct rows. Double-click to review source rows; unlocated findings have none.")
+        ttk.Label(window, text=note, wraplength=880, padding=12).pack(fill="x")
+        options = (("rule", "规则 / Rule"), ("organisation", "机构 / Organisation"),
+                   ("product", "药品 / Medicine"))
+        dimension = ttk.Combobox(window, state="readonly", values=[label for _, label in options])
+        dimension.current(0)
+        dimension.pack(fill="x", padx=12, pady=(0, 8))
+        frame = ttk.Frame(window)
+        frame.pack(fill="both", expand=True, padx=12, pady=(0, 12))
+        columns = ("name", "findings", "records", "unlocated")
+        table = ttk.Treeview(frame, columns=columns, show="headings", selectmode="browse")
+        titles = (("分组", "提示数", "关联记录数", "未定位项") if self.language == "zh" else
+                  ("Group", "Findings", "Records", "Unlocated"))
+        for column, title in zip(columns, titles):
+            table.heading(column, text=title)
+            table.column(column, width=470 if column == "name" else 120, minwidth=80)
+        scroll = ttk.Scrollbar(frame, orient="vertical", command=table.yview)
+        table.configure(yscrollcommand=scroll.set)
+        table.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        keys = []
+
+        def refill(_event=None):
+            table.delete(*table.get_children())
+            keys.clear()
+            selected_dimension = options[dimension.current()][0]
+            # The overview remains useful after a drill-down: show the current search/category scope.
+            previous_group = self.active_group
+            try:
+                self.active_group = None
+                issues = self.filtered_issues()
+            finally:
+                self.active_group = previous_group
+            for group in group_findings(self.result, issues, selected_dimension):
+                keys.append(group["key"])
+                table.insert("", "end", iid=str(len(keys)-1), values=(group["label"], group["findings"],
+                             group["affected_records"], group["unlocated_findings"]))
+
+        def drill(_event=None):
+            selected = table.selection()
+            if not selected or self.busy:
+                return
+            self.active_group = (options[dimension.current()][0], keys[int(selected[0])])
+            self._render_result()
+            if self.issue_by_item:
+                first = next(iter(self.issue_by_item))
+                self.tree.selection_set(first)
+                self.tree.see(first)
+                self.focus_details()
+            window.destroy()
+
+        dimension.bind("<<ComboboxSelected>>", refill)
+        table.bind("<Double-1>", drill)
+        table.bind("<Return>", drill)
+        ttk.Button(window, text="查看选中分组 / Review selected group", command=drill).pack(
+            anchor="e", padx=12, pady=(0, 12))
+        refill()
 
     def show_summary(self):
         if not self.result or self.busy:
@@ -594,8 +681,10 @@ class App(tk.Tk):
         if not selected:
             return
         result, query, category = self.result, self.search_query, self.active_filter
+        group_by, group_key = self.active_group or ("", "")
         self._run_background(
-            lambda: write_filtered_findings(result, issues, selected, query=query, category=category),
+            lambda: write_filtered_findings(result, issues, selected, query=query, category=category,
+                                            group_by=group_by, group_key=group_key),
             lambda paths: messagebox.showinfo(self.t["exported"], "\n".join(str(p) for p in paths.values())),
             "正在导出筛选问题…" if self.language == "zh" else "Exporting filtered findings…",
             self.t["export_error"],

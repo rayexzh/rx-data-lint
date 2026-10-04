@@ -17,6 +17,44 @@ def record_for(result: ValidationResult, issue: Issue) -> dict[str, str]:
     return {}
 
 
+def finding_group(result: ValidationResult, issue: Issue, dimension: str) -> tuple[str, str]:
+    """Return a stable key and readable label without guessing missing identities."""
+    if dimension == "rule":
+        return issue.rule, issue.rule
+    if dimension not in ("organisation", "product"):
+        raise ValueError(f"Unknown finding group dimension: {dimension}")
+    record = record_for(result, issue)
+    if not record:
+        return "__unlocated__", "(No source row)"
+    if dimension == "organisation":
+        code = record.get("ODS_CODE", "").strip()
+        return (f"ods:{code}", code) if code else ("__missing__", "(Blank ODS_CODE)")
+    code = record.get("VMP_SNOMED_CODE", "").strip()
+    name = record.get("VMP_PRODUCT_NAME", "").strip()
+    if code:
+        return f"code:{code}", f"{name or '(Unnamed medicine)'} · {code}"
+    if name:
+        return f"name:{name}", f"{name} (no product code)"
+    return "__missing__", "(Blank product identity)"
+
+
+def group_findings(result: ValidationResult, issues: list[Issue], dimension: str) -> list[dict]:
+    """Count findings and distinct located rows in the supplied review scope."""
+    groups: dict[str, dict] = {}
+    for issue in issues:
+        key, label = finding_group(result, issue, dimension)
+        group = groups.setdefault(key, {"key": key, "label": label, "findings": 0,
+                                        "rows": set(), "unlocated_findings": 0})
+        group["findings"] += 1
+        if record_for(result, issue):
+            group["rows"].add(issue.row)
+        else:
+            group["unlocated_findings"] += 1
+    return sorted(({key: value for key, value in group.items() if key != "rows"} |
+                   {"affected_records": len(group["rows"])} for group in groups.values()),
+                  key=lambda group: (-group["findings"], group["label"].casefold()))
+
+
 def summarise(result: ValidationResult) -> list[dict]:
     groups = defaultdict(list)
     for issue in result.issues:
@@ -34,7 +72,7 @@ def summarise(result: ValidationResult) -> list[dict]:
     return summaries
 
 
-def write_filtered_findings(result, issues, output_dir, *, query="", category="all"):
+def write_filtered_findings(result, issues, output_dir, *, query="", category="all", group_by="", group_key=""):
     """Export one row per selected finding, not a cleaned dataset or full report."""
     root = Path(output_dir)
     root.mkdir(parents=True, exist_ok=True)
@@ -42,6 +80,7 @@ def write_filtered_findings(result, issues, output_dir, *, query="", category="a
     contextual = [{**asdict(i), "record": record_for(result, i)} for i in issues]
     payload = {
         "scope": "filtered_findings", "query": query, "category": category,
+        "group_by": group_by, "group_key": group_key,
         "exported_at_utc": datetime.now(timezone.utc).isoformat(),
         "source_sha256": result.source_sha256, "source": result.source,
         "total_findings": len(result.issues), "selected_findings": len(issues),

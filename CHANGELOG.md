@@ -1,5 +1,11 @@
 # Change log / 更新日志
 
+## v0.4.0-alpha.3 (2026-10-04) — Group findings / 分组复核
+
+- Group the current findings by rule, organisation or medicine and open a group to inspect its source row. / 按规则、机构或药品汇总当前提示，并定位到原始行。
+- Keep exact group identity in filtered JSON exports; full reports and source CSV remain unchanged. / 筛选导出记录分组范围，完整报告和源 CSV 不变。
+- Verified against the public July 2026 provisional SCMD file and the portable checker diagnostics. / 使用公开的 2026 年 7 月临时版 SCMD 和便携版自检验证。
+
 ## v0.4.0-alpha.2 (2026-10-01) — Readable controls and report identity / 布局与报告对应关系
 
 - Keep titles readable and wrap category, export and search controls at small window sizes and large fonts. / 窄窗口、大字体下完整显示标题与操作按钮。

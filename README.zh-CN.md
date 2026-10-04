@@ -4,15 +4,15 @@
 
 Check NHS medicines CSVs, inspect flagged records, and build local SQL summaries. [Full English README](README.md)
 
-[下载 Windows 版](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.2) · [文档目录](docs/INDEX.md) · [操作视频](docs/DEMO_VIDEO.md)
+[下载 Windows 版](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.3) · [文档目录](docs/INDEX.md) · [操作视频](docs/DEMO_VIDEO.md)
 
-**当前版本：v0.4.0-alpha.2。** 在本机运行，不需要付费 API。
+**当前版本：v0.4.0-alpha.3。** 在本机运行，不需要付费 API。
 
 ## 解决什么问题
 
 RxDataLint 面向 NHSBSA 发布的医院药品数据（SCMD）。在做统计或导入 Power BI 前，先检查 CSV 中有哪些记录值得复核。
 
-例如，负数量可能来自库存调整，空白费用不能直接当作零，重复记录也可能影响汇总。软件会列出检查规则、对应单元格和原始记录，方便你查清楚后再分析。
+例如，负数量可能来自库存调整，空白费用不能直接当作零，重复记录也可能影响汇总。可以先按规则、机构或药品汇总提示，再进入原始行复核。
 
 适合使用 SCMD 的分析人员，也可用于学习药品数据分析。它目前不是通用的医药数据检查器。
 
@@ -33,7 +33,7 @@ SQL 汇总回答：每月包含多少记录、哪些产品的已知指示性费�
 
 1. 下载 Windows ZIP，**完整解压整个文件夹**。
 2. 打开 **Start-Checker.bat**，点击 **Try sample／试用示例**。
-3. 选中一条检查结果，查看原始记录，再选择导出完整报告或当前筛选报告。
+3. 点击“分组查看”，选择规则、机构或药品；打开某组后查看原始行，再选择导出完整报告或当前筛选报告。
 4. 打开 **Start-Analysis.bat**，点击 **Use sample／使用示例**，然后 **Generate and verify／生成并验证**。
 5. 打开生成的报告，或查看 CSV 汇总表。
 

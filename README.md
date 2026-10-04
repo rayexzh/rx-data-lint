@@ -4,15 +4,15 @@ Check NHS medicines CSVs, inspect flagged records, and build local SQL summaries
 
 检查 NHS 药品 CSV，查看需要复核的记录，再生成本地 SQL 汇总。[完整中文说明](README.zh-CN.md)
 
-[Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.2) · [Documentation](docs/INDEX.md) · [Walkthrough](docs/DEMO_VIDEO.md)
+[Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.3) · [Documentation](docs/INDEX.md) · [Walkthrough](docs/DEMO_VIDEO.md)
 
-**Current version: v0.4.0-alpha.2.** Runs locally; no paid API is needed.
+**Current version: v0.4.0-alpha.3.** Runs locally; no paid API is needed.
 
 ## What it is for
 
 RxDataLint works with NHSBSA Secondary Care Medicines Data (SCMD). It adds a review step before you use a downloaded CSV for analysis or Power BI reporting.
 
-A negative quantity may be a stock adjustment. A blank cost is not zero. Repeated records can affect totals. The checker points you to the relevant cells and source rows, so you can investigate before interpreting a summary.
+A negative quantity may be a stock adjustment. A blank cost is not zero. Repeated records can affect totals. Group findings by rule, organisation or medicine, then open the relevant source row before interpreting a summary.
 
 It is intended for analysts working with SCMD and learners practising medicines-data analysis. It does not accept every kind of pharmaceutical dataset.
 
@@ -33,7 +33,7 @@ SQL summaries show monthly record counts, product costs, organisation coverage, 
 
 1. Download the Windows ZIP and **extract the whole folder**.
 2. Open **Start-Checker.bat**, then choose **Try sample**.
-3. Select a finding and inspect its source record. Choose a full report or a report of the current filtered view.
+3. Select **Group findings**, choose rule, organisation or medicine, then open a group and inspect a source row. Choose a full report or a report of the current filtered view.
 4. Open **Start-Analysis.bat**, choose **Use sample**, then **Generate and verify**.
 5. Open the generated report or inspect the CSV summaries.
 
