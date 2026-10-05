@@ -1,5 +1,15 @@
 # Animated walkthrough / 动画操作视频
 
+## Short introduction / 32 秒短动画
+
+[Watch the otter explain the workflow / 看水獭讲解](demo/mascot/RxDataLint-Mascot-Short-v0.4.0-alpha.4.mp4) · [English subtitles](demo/mascot/English.srt) · [中文字幕](demo/mascot/Chinese.srt)
+
+This illustrated introduction uses the bundled synthetic sample and a capture of the current desktop app. The otter and moving cards explain the review path; they are not app features. English voice is synthesized locally. A flag asks for review, not proof of a source error. / 动画使用自带模拟样例与当前桌面程序截图。水獭及卡片只用于讲解；英文旁白为本机合成。提示意味着需要复核，不等于原始数据有错。
+
+![Otter short-video poster](demo/mascot/poster.png)
+
+## Longer walkthrough / 旧版长演示
+
 [Watch/download MP4](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Animated-Walkthrough.mp4) · [Complete video pack](https://github.com/rayexzh/rx-data-lint/releases/download/v0.4.0-alpha.1/RxDataLint-Demo-Pack.zip)
 
 A 1080p walkthrough of **v0.4.0-alpha.1**, using the bundled synthetic eight-row example. It shows sample loading, deduplicated record counts, negative-value review, record details, check coverage, search, full versus filtered exports, SQL analysis and display controls.

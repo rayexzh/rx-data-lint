@@ -4,9 +4,11 @@ Check NHS medicines CSVs, inspect flagged records, and build local SQL summaries
 
 检查 NHS 药品 CSV，查看需要复核的记录，再生成本地 SQL 汇总。[完整中文说明](README.zh-CN.md)
 
-[Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.4) · [Documentation](docs/INDEX.md) · [Walkthrough](docs/DEMO_VIDEO.md)
+[Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.4) · [32-second animation](docs/demo/mascot/RxDataLint-Mascot-Short-v0.4.0-alpha.4.mp4) · [Documentation](docs/INDEX.md)
 
 **Current version: v0.4.0-alpha.4.** Runs locally; no paid API is needed.
+
+[![RxDataLint animated introduction](docs/demo/mascot/poster.png)](docs/demo/mascot/RxDataLint-Mascot-Short-v0.4.0-alpha.4.mp4)
 
 ## What it is for
 
@@ -72,4 +74,4 @@ rx-data-lint examples/sample_scmd.csv --output outputs/demo
 - [Changes](CHANGELOG.md), [contributing](CONTRIBUTING.md) and [security](SECURITY.md)
 - [Scripted usability review](docs/SIMULATED-USABILITY-REVIEW.md) and [analyst role walkthrough](docs/SIMULATED-ROLE-REVIEW-2026-10-04.md) — automated checks, not external user feedback.
 
-The walkthrough shows an earlier interface; its recording method is documented in the video guide. [BatchScope](https://github.com/rayexzh/batchscope) is a separate project for synthetic manufacturing-quality records, with its own downloads and versions.
+The [new short animation](docs/DEMO_VIDEO.md) shows the current sample interface; the longer walkthrough shows an earlier version. [BatchScope](https://github.com/rayexzh/batchscope) is a separate project for synthetic manufacturing-quality records, with its own downloads and versions.

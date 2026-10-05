@@ -5,7 +5,7 @@ Current release / 当前版本：[v0.4.0-alpha.4 safer source review / 安全复
 | Need / 需要 | Read / 入口 |
 |---|---|
 | First run / 第一次打开 | [Quick start](QUICKSTART.md) · [Windows suite](WINDOWS-SUITE.md) |
-| Understand by watching / 看视频学习 | [Animated walkthrough and scripts](DEMO_VIDEO.md) |
+| Understand by watching / 看视频学习 | [32-second animation and longer walkthrough](DEMO_VIDEO.md) |
 | Read the check rules / 理解规则 | [Rules](RULES.md) |
 | Explore SQL and reports / 学习分析 | [Analysis guide](../analysis/README.md) · [中文](../analysis/README.zh-CN.md) |
 | Show portfolio evidence / 求职展示 | [Portfolio](PORTFOLIO.md) · [中文](PORTFOLIO.zh-CN.md) |

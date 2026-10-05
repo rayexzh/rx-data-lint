@@ -1,0 +1,18 @@
+1
+00:00:00,000 --> 00:00:08,000
+Before analysing medicines data, check the file you downloaded.
+
+2
+00:00:08,000 --> 00:00:16,000
+A negative value may be a stock adjustment. The flag asks for review,
+not a verdict.
+
+3
+00:00:16,000 --> 00:00:24,000
+Group findings by rule, organisation, or medicine. Then inspect the
+source row in the desktop app.
+
+4
+00:00:24,000 --> 00:00:32,000
+Export the findings before building local SQL summaries. Try the bundled
+sample to see the workflow.

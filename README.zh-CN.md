@@ -4,9 +4,11 @@
 
 Check NHS medicines CSVs, inspect flagged records, and build local SQL summaries. [Full English README](README.md)
 
-[下载 Windows 版](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.4) · [文档目录](docs/INDEX.md) · [操作视频](docs/DEMO_VIDEO.md)
+[下载 Windows 版](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.4) · [32 秒短动画](docs/demo/mascot/RxDataLint-Mascot-Short-v0.4.0-alpha.4.mp4) · [文档目录](docs/INDEX.md)
 
 **当前版本：v0.4.0-alpha.4。** 在本机运行，不需要付费 API。
+
+[![RxDataLint 水獭短动画](docs/demo/mascot/poster.png)](docs/demo/mascot/RxDataLint-Mascot-Short-v0.4.0-alpha.4.mp4)
 
 ## 解决什么问题
 
