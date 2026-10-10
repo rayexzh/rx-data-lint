@@ -47,7 +47,7 @@ python -m pip install pyinstaller==6.22.3
 python tools/build_windows_suite.py
 ```
 
-The build refuses existing versioned output folders, runs both packaged diagnostics, extracts the ZIP into a path containing spaces and Chinese characters, repeats the checks, then writes the checksum and validation summary. Output: `dist/RxDataLint-Windows-x64-v0.4.0-alpha.4.zip`.
+The build refuses existing versioned output folders, runs both packaged diagnostics, extracts the ZIP into a path containing spaces and Chinese characters, repeats the checks, then writes the checksum and validation summary. Current source output: `dist/RxDataLint-Windows-x64-v0.4.0-alpha.5.zip`. To preserve another candidate built from the same version, use `python tools/build_windows_suite.py --artifact-root outputs/candidate-new`; its `build/` and `dist/` stay in that folder. / 当前源码构建候选版 alpha.5；同版本再次构建请指定新的产物目录，避免覆盖旧包。
 
 
 ## First example / 第一个示例

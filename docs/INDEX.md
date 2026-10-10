@@ -2,6 +2,8 @@
 
 Current release / 当前版本：[v0.4.0-alpha.4 safer source review / 安全复核](RELEASE-v0.4.0-alpha.4.md).
 
+Local candidate / 本地候选版：[2026-10-10 maintenance review / 维护检查](REVIEW-2026-10-10.md).
+
 | Need / 需要 | Read / 入口 |
 |---|---|
 | First run / 第一次打开 | [Quick start](QUICKSTART.md) · [Windows suite](WINDOWS-SUITE.md) |

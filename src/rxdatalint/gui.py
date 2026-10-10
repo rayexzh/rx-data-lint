@@ -541,7 +541,7 @@ class App(tk.Tk):
             return {
                 "value.missing_cost": "参考费用为空，费用分析需披露缺失；不要补零。",
                 "value.negative": f"发现负数 {issue.value}，可能涉及调整；需核查，勿直接删除或取绝对值。",
-                "series.extreme_quantity": "数量超过同药品正数中位数的 20 倍；机构差异可能影响比较，不代表已证实错误。",
+                "series.extreme_quantity": "数量超过同药品、同单位正数中位数的 20 倍；单位定义未经独立核实，机构差异可能影响比较，不代表已证实错误。",
             }.get(issue.rule, issue.message)
         return issue.message
 

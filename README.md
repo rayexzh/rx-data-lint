@@ -6,7 +6,7 @@ Check NHS medicines CSVs, inspect flagged records, and build local SQL summaries
 
 [Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.4) · [Documentation](docs/INDEX.md) · [Walkthrough](docs/DEMO_VIDEO.md)
 
-**Current version: v0.4.0-alpha.4.** Runs locally; no paid API is needed.
+**Published Windows release: v0.4.0-alpha.4.** Runs locally; no paid API is needed. The local source candidate is v0.4.0-alpha.5; see the [maintenance review](docs/REVIEW-2026-10-10.md) for changes and verification limits.
 
 ## What it is for
 

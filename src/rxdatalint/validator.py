@@ -16,11 +16,12 @@ from pathlib import Path
 from .schema import CANONICAL_COLUMNS, COLUMN_ALIASES, REQUIRED_COLUMNS, normalise_header
 from . import __version__
 
-RULESET_VERSION = "0.2.2"
+RULESET_VERSION = "0.2.3"
 
 MONTH_RE = re.compile(r"^(\d{4})-?(0[1-9]|1[0-2])$")
 ODS_RE = re.compile(r"^[A-Z0-9]{3,5}$")
 SNOMED_RE = re.compile(r"^\d{6,18}$")
+NUMBER_RE = re.compile(r"^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]*)?)(?:[eE][+-]?[0-9]+)?$")
 
 
 @dataclass(frozen=True)
@@ -118,8 +119,12 @@ class ValidationResult:
 
 
 def _parse_number(value: str) -> float | None:
+    """Accept decimal/exponent notation and correctly grouped thousands only."""
     try:
-        number = float(value.replace(",", "").strip())
+        text = value.strip()
+        if not NUMBER_RE.fullmatch(text):
+            return None
+        number = float(text.replace(",", ""))
         return number if math.isfinite(number) else None
     except (AttributeError, ValueError):
         return None
@@ -216,7 +221,7 @@ def validate_csv(path: str | Path) -> ValidationResult:
 
         duplicate_keys: dict[tuple[str, str, str], int] = {}
         months_by_org: dict[str, set[int]] = defaultdict(set)
-        quantities_by_product: dict[str, list[tuple[int, float]]] = defaultdict(list)
+        quantities_by_product: dict[tuple[str, str, str], list[tuple[int, float]]] = defaultdict(list)
 
         for row_number, raw in enumerate(reader, start=2):
             if None in raw or any(value is None for value in raw.values()):
@@ -306,7 +311,12 @@ def validate_csv(path: str | Path) -> ValidationResult:
                         "Negative stock-control adjustments can be valid, but may distort aggregates.",
                     ))
                 elif column == "TOTAL_QUANTITY_IN_VMP_UDFS_UNIT_OF_MEASURE" and SNOMED_RE.fullmatch(snomed):
-                    quantities_by_product[snomed].append((row_number, number))
+                    unit_id = row["VMP_UDFS_UNIT_OF_MEASURE_IDENTIFIER"]
+                    unit_name = row["VMP_UDFS_UNIT_OF_MEASURE_NAME"].casefold()
+                    # A product identifier alone does not make quantities with
+                    # different or unspecified units comparable.
+                    if unit_id or unit_name:
+                        quantities_by_product[(snomed, unit_id, unit_name)].append((row_number, number))
 
         _add_missing_month_issues(months_by_org, issues)
         _add_outlier_issues(quantities_by_product, issues)
@@ -322,6 +332,8 @@ def validate_csv(path: str | Path) -> ValidationResult:
         count = len(cleaned_rows) if rule.startswith("value.") else counts[rule]
         status = "skipped" if absent else ("executed" if count else "not_applicable")
         reason = "Missing columns: " + ", ".join(absent) if absent else ("" if count else "No eligible records/groups; see rule prerequisites")
+        if rule == "series.extreme_quantity" and not absent and not count:
+            reason = "Requires supplied unit identity and four positive observations in the same product/unit group"
         checks.append(RuleCheck(rule, status, 0 if absent else count, reason))
     for column in numeric_columns:
         for rule in ("value.numeric", "value.negative"):
@@ -354,9 +366,9 @@ def _add_missing_month_issues(months_by_org: dict[str, set[int]], issues: list[I
 
 
 def _add_outlier_issues(
-    quantities_by_product: dict[str, list[tuple[int, float]]], issues: list[Issue]
+    quantities_by_product: dict[tuple[str, str, str], list[tuple[int, float]]], issues: list[Issue]
 ) -> None:
-    for snomed, observations in quantities_by_product.items():
+    for (snomed, unit_id, unit_name), observations in quantities_by_product.items():
         positive = [value for _, value in observations if value > 0]
         if len(positive) < 4:
             continue
@@ -368,9 +380,9 @@ def _add_outlier_issues(
             if value > threshold:
                 issues.append(Issue(
                     "series.extreme_quantity", "warning",
-                    f"Quantity {value:g} is more than 20x the product median ({median:g}).",
+                    f"Quantity {value:g} is more than 20x the product/unit median ({median:g}); unit {unit_name or unit_id}.",
                     row_number,
                     "TOTAL_QUANTITY_IN_VMP_UDFS_UNIT_OF_MEASURE",
                     str(value),
-                    "Treat this as a review flag, not proof of an error.",
+                    "Treat this as a review flag, not proof of an error. Comparisons use the same product and supplied unit identity; unit definitions are not independently verified.",
                 ))

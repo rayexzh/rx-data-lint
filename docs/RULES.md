@@ -12,11 +12,11 @@ This catalog describes the implementation, not a regulatory specification. Offic
 | value.ods_code | 3–5 uppercase alphanumeric characters | Syntax heuristic only; no lookup of real organizations. |
 | value.snomed_code | 6–18 digits | No checksum, dm+d lookup, active-status or product-type validation. |
 | value.product_name | Nonblank name | Does not verify correspondence to the identifier. |
-| value.numeric | Finite floating point number after comma removal | Comma removal is permissive, not locale-aware. Not exact financial arithmetic. |
+| value.numeric | Finite decimal or exponent notation; commas only in three-digit thousands groups | `1,234.50` is accepted; `1,2`, decimal commas, underscores and nonfinite values are rejected. Checker and SQL analysis use the same parser. Not exact financial arithmetic. |
 | value.negative | Negative quantity or cost | Stock adjustments may be legitimate. |
 | row.duplicate_key | Same parsed month, ODS and product ID | Candidate duplicates, not automatic deletion instructions. Requires syntactically valid key. |
 | series.missing_month | Organization gaps within the file-wide observed range | File filtering, opening/closure or reporting scope may explain gaps; not proof of missing submissions. Skips if fewer than two distinct valid months. |
-| series.extreme_quantity | Greater than 20 times product median | Project heuristic, not an official threshold. Requires four positive observations; pools organizations and months, so size differences may explain flags. |
+| series.extreme_quantity | Greater than 20 times product/unit median | Requires a supplied UDFS unit identifier or name and four positive observations with the same product, identifier and case-insensitive unit name. Unknown units are excluded. Pools organizations and months, so size differences may explain flags. Unit definitions are not independently verified; this is a project heuristic, not an official threshold. |
 
 ## Report interpretation
 

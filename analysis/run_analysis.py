@@ -14,18 +14,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from rxdatalint.validator import validate_csv, MONTH_RE, RULESET_VERSION
+from rxdatalint.validator import validate_csv, MONTH_RE, RULESET_VERSION, _parse_number
 from rxdatalint import __version__
 from rxdatalint.schema import REQUIRED_COLUMNS
 from html_report import render_reports
 
 
 def number(value):
-    try:
-        result = float(value.replace(",", "").strip())
-        return result if math.isfinite(result) else None
-    except (ValueError, AttributeError):
-        return None
+    # The checker and SQL layer must agree on which amounts are valid.
+    return _parse_number(value)
 
 
 def safe_cell(value):
@@ -117,7 +114,7 @@ def main():
     args = parser.parse_args()
     try:
         info = build(args.csv, args.output, args.source_url)
-    except (ValueError, OSError, sqlite3.Error, UnicodeError) as exc:
+    except (ValueError, OSError, sqlite3.Error, UnicodeError, csv.Error) as exc:
         parser.exit(1, f"Analysis failed: {exc}\n")
     print(f"Created {args.output.resolve()} | {info['row_count']} records | months: {info['months']}")
 

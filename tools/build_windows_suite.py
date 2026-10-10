@@ -1,4 +1,5 @@
 """Build and verify an unsigned two-program Windows portable release."""
+import argparse
 import hashlib
 import json
 import os
@@ -57,11 +58,15 @@ def smoke(suite, results):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--artifact-root', type=Path, default=ROOT,
+                        help='Parent for build/ and dist/; use a fresh folder to preserve earlier candidate builds')
+    artifact_root = parser.parse_args().artifact_root.resolve()
     if sys.platform != "win32" or sys.maxsize <= 2**32:
         raise SystemExit("Build with 64-bit Python on Windows.")
-    suite = ROOT / "dist" / NAME
-    workspace = ROOT / "build" / NAME
-    archive = ROOT / "dist" / f"RxDataLint-Windows-x64-{TAG}.zip"
+    suite = artifact_root / "dist" / NAME
+    workspace = artifact_root / "build" / NAME
+    archive = artifact_root / "dist" / f"RxDataLint-Windows-x64-{TAG}.zip"
     if suite.exists() or workspace.exists() or archive.exists():
         raise SystemExit("Output already exists. Preserve it and use a fresh version/build location.")
     suite.mkdir(parents=True)
@@ -111,7 +116,7 @@ def main():
                   "machine": platform.machine(), "archive": archive.name, "sha256": checksum,
                   "built": first, "extracted": second,
                   "scope": "Tested on the build machine with Python environment variables removed and a system-only PATH. No independent clean Windows VM/other-machine test. Report-button handlers checked with an intercepted open call."}
-    (ROOT / "dist" / f"validation-{TAG}.json").write_text(json.dumps(validation, indent=2), encoding="utf-8")
+    (artifact_root / "dist" / f"validation-{TAG}.json").write_text(json.dumps(validation, indent=2), encoding="utf-8")
     print(json.dumps(validation, indent=2))
     print(archive)
 

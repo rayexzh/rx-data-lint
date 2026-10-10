@@ -1,19 +1,47 @@
 import csv
+import contextlib
+import io
 import json
 import queue
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 from contextlib import closing
 from pathlib import Path
 
-from run_analysis import build, safe_cell
+from run_analysis import build, safe_cell, main
 from verify_analysis import verify
 from desktop import AnalysisWindow
 from html_report import REPORT_FILES
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_cli_truncated_csv_reports_failure_without_creating_results(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            self.sample(root / 'truncated.csv', [('202607', '10')])
+            header = (root / 'truncated.csv').read_text().splitlines()[0]
+            (root / 'truncated.csv').write_text(header + '\n202607,R1A,123456789,Example,1,"10', encoding='utf-8')
+            with patch('sys.argv', ['run_analysis', str(root / 'truncated.csv'), '--output',
+                                   str(root / 'output'), '--source-url', 'synthetic']):
+                with contextlib.redirect_stderr(io.StringIO()) as error:
+                    with self.assertRaises(SystemExit) as exited:
+                        main()
+            self.assertEqual(exited.exception.code, 1)
+            self.assertIn('Analysis failed', error.getvalue())
+            self.assertFalse((root / 'output').exists())
+
+    def test_malformed_cost_grouping_stays_invalid_in_sql(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            self.sample(root / 'sample.csv', [('202607', '1,2'), ('202607', '1,234.50')])
+            build(root / 'sample.csv', root / 'output', 'synthetic')
+            with closing(sqlite3.connect(root / 'output/medicines.sqlite')) as db:
+                self.assertEqual(list(db.execute('SELECT cost_gbp, cost_status FROM records ORDER BY row_number')),
+                                 [(None, 'invalid'), (1234.5, 'known')])
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM findings WHERE rule='value.numeric'").fetchone()[0], 1)
+
     def test_malformed_manifest_is_rejected_cleanly(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
