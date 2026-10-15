@@ -4,9 +4,9 @@ Check NHS medicines CSVs, inspect flagged records, and build local SQL summaries
 
 检查 NHS 药品 CSV，查看需要复核的记录，再生成本地 SQL 汇总。[完整中文说明](README.zh-CN.md)
 
-[Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.4) · [Documentation](docs/INDEX.md) · [Walkthrough](docs/DEMO_VIDEO.md)
+[Windows download](https://github.com/rayexzh/rx-data-lint/releases/tag/v0.4.0-alpha.5) · [Documentation](docs/INDEX.md) · [Walkthrough](docs/DEMO_VIDEO.md)
 
-**Published Windows release: v0.4.0-alpha.4.** Runs locally; no paid API is needed. The local source candidate is v0.4.0-alpha.5; see the [maintenance review](docs/REVIEW-2026-10-10.md) for changes and verification limits.
+**Published Windows release: v0.4.0-alpha.5.** Runs locally; no paid API is needed. See the [release notes](docs/RELEASE-v0.4.0-alpha.5.md) and [maintenance review](docs/REVIEW-2026-10-10.md) for changes and verification limits.
 
 ## What it is for
 

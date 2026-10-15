@@ -1,10 +1,10 @@
 # Change log / 更新日志
 
-## Unreleased / 尚未发布
+## v0.4.0-alpha.5 (2026-10-15) — Numeric and unit review / 数值与单位检查
 
 - Reject malformed numeric separators instead of silently changing amounts; the checker and SQL analysis now share the same numeric parser (ruleset 0.2.3). / 拒绝格式错误的数值分隔符，避免金额被默默改写；检查器与 SQL 分析共用数值解析逻辑（规则集 0.2.3）。
 - Keep extreme-quantity comparisons within the same product and supplied unit identity; unknown units do not enter the median. / 极端数量只在同药品、同单位标识内比较，未知单位不纳入中位数。
-- Existing Windows downloads have not yet been rebuilt for these changes. / 现有 Windows 下载包尚未包含这些修改。
+- Includes updated Windows Checker and Analysis tools. / Windows 包包含更新后的检查器与分析工具。
 
 ## v0.4.0-alpha.4 (2026-10-04) — Safer CSV and source switching / CSV 与文件切换修复
 

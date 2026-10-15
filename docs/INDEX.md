@@ -1,6 +1,6 @@
 # Documentation / 文档导航
 
-Current release / 当前版本：[v0.4.0-alpha.4 safer source review / 安全复核](RELEASE-v0.4.0-alpha.4.md).
+Current release / 当前版本：[v0.4.0-alpha.5 numeric and unit review / 数值与单位检查](RELEASE-v0.4.0-alpha.5.md).
 
 Local candidate / 本地候选版：[2026-10-10 maintenance review / 维护检查](REVIEW-2026-10-10.md).
 
